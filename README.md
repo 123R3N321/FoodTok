@@ -4,3 +4,6 @@
  - Ren
  - Pranjal Mishra
  - Matty
+
+## Ren's Arbitrary rules:
+- we do camel case not snake case
