@@ -1,0 +1,5 @@
+asgiref==3.9.1
+Django==5.2.6
+pypandoc==1.15
+sqlparse==0.5.3
+typing_extensions==4.15.0
