@@ -1,0 +1,221 @@
+%-------------------------
+% Resume in Latex
+% Original Author : Jake Gutierrez
+% Taken by Ren to build his resume
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%----------HEADING----------
+% \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+%   \textbf{\href{http://123r3n321.github.io}{\Large Jiyuan Ren}} & Email : \href{mailto:jr5887@nyu.edu}{jr5887@nyu.edu}\\
+%   \href{http://123r3n321.github.io/}{http:123r3n321.github.io} & Mobile : +1-332-238-9519 \\
+% \end{tabular*}
+
+\begin{center}
+    \textbf{\Huge \scshape Jiyuan Ren} \\ \vspace{1pt}
+    \small 332-238-9519 $|$ \href{mailto:x@x.com}{\underline{jr5887@nyu.edu}} $|$
+    \href{https://linkedin.com/in/...}{\underline{linkedin.com/in/jiyuanren}} $|$
+    \href{https://github.com/...}{\underline{https://github.com/123R3N321}}
+\end{center}
+
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+      \resumeSubheading
+      {New York University}{New York City, NY}
+      {Master's in Computer Science, BSMS program, GPA 3.8/4}{Sept. 2025 -- Dec 2026}
+      \resumeItemListStart
+        \resumeItem{Completed BS in Computer Engineering Jan.2022-Aug. 2025, Dean's List all semesters.}
+        \resumeItem{MS academic distinction scholarship recipient}
+     \resumeItemListEnd
+    % \resumeSubheading
+    %   {New York University}{New York City, NY}
+    %   {Bachelor of Science in Computer Engineering}{Jan. 2022 -- Aug 2025}
+
+  \resumeSubHeadingListEnd
+
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {CS Teaching Assistant}{Sept 2025 -- Present}
+      {New York University}{New York City, NY}
+      \resumeItemListStart
+        \resumeItem{Host weekly labs and recitations attended by 60+ students covering data structures and algorithms in Python}
+        \resumeItem{Grade homework and exams in two class size of 200+ students for DSA in Python and OOP in Java}
+      \resumeItemListEnd
+
+% -----------Multiple Positions Heading-----------
+%    \resumeSubSubheading
+%     {Software Engineer I}{Oct 2014 - Sep 2016}
+%     \resumeItemListStart
+%        \resumeItem{Apache Beam}
+%          {Apache Beam is a unified model for defining both batch and streaming data-parallel processing pipelines}
+%     \resumeItemListEnd
+%    \resumeSubHeadingListEnd
+%-------------------------------------------
+
+    \resumeSubheading
+      {VR/AR Developer}{May. 2025 -- Aug. 2025}
+      {Golden Gloves America}{Tulsa, OK}
+      \resumeItemListStart
+        \resumeItem{Worked Early Access of \emph{Golden Gloves VR} on Meta Quest Store, rated 4.3/5 by 200+ reviews}
+        \resumeItem{Reduced gameplay load screen time by 30\% , in the process reducing hardware heating and noise}
+        \resumeItem{Implemented player action prediction and detection system, achieveing 92\% accuracy through SVM machine learning approach in C\#}
+    \resumeItemListEnd
+
+    \resumeSubheading
+      {Computer Science Head Tutor}{May 2023 -- May 2025}
+      {New York University}{New York City, NY}
+      \resumeItemListStart
+        \resumeItem{Interviewed, trained, and oversaw 15-20 Computer Science Tutors, providing tutoring services to all NYU undergrad CS students in all CS courses with total class size of 2000+}
+        \resumeItem{Created and maintained training and teaching materials accessed by 1000+ students}
+        \resumeItem{Consistently the most demanded tutor by per person/hour training sessions Sept.2024 - May. 2025}
+        \resumeItem{Tutor Of The Year Award 2025}
+      \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+
+%-----------PROJECTS-----------
+\section{Projects}
+    \resumeSubHeadingListStart
+      \resumeProjectHeading
+          {\textbf{PcapSniffer} $|$ \emph{Java, SpringBoot, Reactjs, PostgreSQL, Docker,Pcap4j}}{Jan. 2025 -- May.2025}
+          \resumeItemListStart
+            \resumeItem{Developed a full-stack web Spring Boot application in Java serving REST APIs with Reactjs frontend and PostgreSQL backend, fully Dockerized Maven build}
+            \resumeItem{Implemented a scan rule table with Pcap4j to flag potentially malicious network scans}
+            \resumeItem{Submitted as final project for a graduate class, the only project submitted by undergrad student to earn perfect score, and was invited by professor to be a TA for the class}
+
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\textbf{Personal proxy VPN} $|$ \emph{C, Bash, Shadowsocks-libdev, DigitalOcean, Docker}}{Jan 2024 -- Present}
+          \resumeItemListStart
+            \resumeItem{Built a personal vpn on a Digital Ocean Droplet with Shadowsocks develper tools in C and Bash script, achieving fast, reliable VPN connection from overseas}
+            \resumeItem{Achieved offline rate of less than 0.01\%, fully Dockerized with automated rebooting when offline, logging for unusual traffic, and re-configuration of Droplet Virtual Machines for IP hopping and optimized performance}
+
+            \resumeItem{Collaborated with Minecraft server administrators to suggest features and get feedback about the plugin}
+          \resumeItemListEnd
+    \resumeSubHeadingListEnd
+
+
+
+%
+%-----------PROGRAMMING SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages}{: Python, C/C++, Java, Bash script, SQL (Postgres), JavaScript, HTML/CSS} \\
+     \textbf{Frameworks}{: React, Flask, Django Spring Boot, Reactjs, Tensorflow, Scikit-Learn} \\
+     \textbf{Developer Tools}{: Git, Docker, CircleCI, Google Cloud Platform, DigitalOcean, AWS EC2, PyCharm, IntelliJ} \\
+     \textbf{Libraries}{: Shadowsocks, pandas, NumPy, Matplotlib}
+    }}
+ \end{itemize}
+
+
+%-------------------------------------------
+\end{document}
