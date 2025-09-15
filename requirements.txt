@@ -1,5 +1,7 @@
 asgiref==3.9.1
+beautifulsoup4==4.13.5
 Django==5.2.6
 pypandoc==1.15
+soupsieve==2.8
 sqlparse==0.5.3
 typing_extensions==4.15.0

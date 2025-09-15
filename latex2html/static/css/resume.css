@@ -1,0 +1,269 @@
+/* =============== Base / theme =============== */
+:root {
+  --bg: #ffffff;
+  --fg: #0f172a;          /* slate-900 */
+  --muted: #475569;       /* slate-600 */
+  --rule: #e5e7eb;        /* gray-200 */
+  --link: #2563eb;        /* blue-600 */
+  --chip: #f3f4f6;        /* gray-100 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0000;
+    --fg: #e5e7eb;
+    --muted: #94a3b8;
+    --rule: #1f2937;
+    --link: #60a5fa;
+    --chip: #111827;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* =============== Layout =============== */
+.resume {
+  display: grid;
+  place-items: start center;
+  padding: 24px;
+}
+.resume-shell {
+  width: 100%;
+  max-width: 860px;
+  background: transparent;
+}
+
+/* =============== Typography =============== */
+.resume-shell h1, .resume-shell h2, .resume-shell h3 {
+  margin: 0 0 .5rem;
+  line-height: 1.2;
+}
+.resume-shell h1 {
+  font-size: clamp(28px, 4vw, 40px);
+  text-align: center;
+  font-weight: 800;
+}
+.resume-shell h2 {
+  font-size: clamp(18px, 2.2vw, 22px);
+  margin-top: 1.25rem;
+  padding-bottom: .25rem;
+  border-bottom: 1px solid var(--rule);
+  text-transform: none;
+  letter-spacing: .2px;
+}
+.resume-shell h3 {
+  font-size: clamp(16px, 2vw, 19px);
+}
+
+.resume-shell p {
+  margin: .35rem 0;
+}
+.resume-shell a {
+  color: var(--link);
+  text-decoration: none;
+}
+.resume-shell a:hover, .resume-shell a:focus {
+  text-decoration: underline;
+}
+
+/* =============== Centered header from LaTeX \begin{center} ... \end{center} =============== */
+/* Make first centered block look like a big name line */
+.resume-shell :is(p,div)[style*="text-align:center"]:first-of-type {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  color: var(--fg);
+  margin-bottom: .25rem;
+}
+
+/* Next centered block is contact info: smaller & muted */
+.resume-shell :is(p,div)[style*="text-align:center"]:nth-of-type(2) {
+  color: var(--muted);
+}
+
+/* Contacts: evenly spaced links, no weird math pipes (we replaced them in build) */
+.resume-shell p[style*="text-align:center"] a {
+  padding: .1rem .25rem;
+  border-radius: .35rem;
+  margin: 0 .35rem;
+}
+
+/* Keep previous spacing tweak */
+.resume-shell p:has(strong) + p,
+.resume-shell p:has(a) + p { margin-top: 0; }
+
+/* =============== Lists =============== */
+.resume-shell ul, .resume-shell ol {
+  margin: .25rem 0 .5rem 1.1rem;
+  padding: 0;
+}
+.resume-shell li { margin: .15rem 0; }
+.resume-shell ul ul { margin-left: 1rem; }
+
+/* Make bullet density pleasant for resume */
+.resume-shell li::marker { color: var(--muted); }
+
+/* =============== “Subheading rows” (from LaTeX tabular*) =============== */
+.resume-shell table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: .35rem 0 .25rem;
+}
+.resume-shell table td, .resume-shell table th {
+  padding: 0;
+  border: 0;
+  vertical-align: top;
+}
+.resume-shell table td:last-child {
+  text-align: right;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-left: .75rem;
+}
+
+/* On narrow screens, stack the two-column subheadings */
+@media (max-width: 620px) {
+  .resume-shell table tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 2px;
+  }
+  .resume-shell table td:last-child {
+    text-align: left;
+    padding-left: 0;
+    color: var(--muted);
+    font-size: .95em;
+  }
+}
+
+/* Make organization lines stand out a bit */
+.resume-shell table td b, .resume-shell table td strong {
+  font-weight: 700;
+}
+.resume-shell table td i, .resume-shell table td em {
+  color: var(--muted);
+}
+
+/* =============== “Chips” for skill lines =============== */
+/* Your build step now outputs <p><strong>Label</strong></p> + <ul class="skills">…</ul> */
+.resume-shell .skills {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem .5rem;
+  margin: .35rem 0 .6rem;
+}
+.resume-shell .skills li {
+  background: var(--chip);
+  padding: .15rem .5rem;
+  border-radius: 999px;
+}
+
+/* Optional: label styling above each chip list */
+.resume-shell p > strong {
+  color: var(--muted);
+}
+
+/* =============== Spacing polish =============== */
+.resume-shell section, .resume-shell .section { margin: 1rem 0; }
+.resume-shell hr { border: 0; border-top: 1px solid var(--rule); margin: 1rem 0; }
+
+/* Reduce extra gap Pandoc sometimes inserts between heading, table, and list */
+.resume-shell h2 + table { margin-top: .4rem; }
+.resume-shell table + ul { margin-top: .25rem; }
+.resume-shell table + p { margin-top: .25rem; }
+
+/* =============== Print (PDF) =============== */
+@media print {
+  :root {
+    --bg: #fff; --fg: #000; --muted: #333; --rule: #ddd; --link: #000;
+  }
+  body { background: #fff; }
+  .resume { padding: 0; }
+  .resume-shell { max-width: none; }
+  a { color: inherit; text-decoration: none; }
+  .resume-shell h2 { border-color: #ccc; }
+}
+
+
+/* =============== Landing hero =============== */
+.landing-hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: 10vh 0 8vh;
+}
+
+.landing-title {
+  font-size: clamp(34px, 6vw, 56px);
+  font-weight: 800;
+  margin: 0 0 .6rem;
+  line-height: 1.15;
+}
+
+.landing-tagline {
+  margin: 0 0 1.4rem;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+.landing-cta { margin: .6rem 0 1.2rem; }
+
+.landing-links {
+  margin-top: .75rem;
+  color: var(--muted);
+}
+.landing-links a {
+  color: var(--link);
+  text-decoration: none;
+}
+.landing-links a:hover { text-decoration: underline; }
+
+/* =============== Buttons (theme-consistent) =============== */
+.btn {
+  display: inline-block;
+  padding: .7rem 1.15rem;
+  border-radius: .65rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform .06s ease, opacity .2s ease, background-color .2s ease, color .2s ease;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--link);
+  color: #0b1020; /* readable on blue in both themes */
+}
+@media (prefers-color-scheme: dark) {
+  .btn-primary { color: #0b1020; }
+}
+
+.btn:hover { transform: translateY(-1px); opacity: 0.95; }
+.btn:active { transform: translateY(0); opacity: 1; }
+
+/* Use your existing .sep color/spacing; already defined in your CSS */
+
+/* Landing page button */
+.btn.btn-primary {
+  display: inline-block;
+  background: var(--link);
+  color: #fff;                  /* always visible */
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn.btn-primary:hover,
+.btn.btn-primary:focus {
+  background: #1d4ed8;          /* darker blue for hover */
+  transform: translateY(-2px);
+}

@@ -1,0 +1,17 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Jiyuan Ren — Resume</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/resume.css' %}" rel="stylesheet" />
+</head>
+<body>
+  <main class="resume">
+    <div class="resume-shell">
+      {% include "_resume_content.html" %}
+    </div>
+  </main>
+</body>
+</html>

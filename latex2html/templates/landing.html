@@ -1,0 +1,30 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Ren</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/resume.css' %}" rel="stylesheet" />
+</head>
+<body>
+  <main class="resume">
+    <div class="resume-shell landing-hero">
+      <h1 class="landing-title">Ren</h1>
+      <p class="landing-tagline">
+        I cook
+      </p>
+      <div class="landing-cta">
+        <a class="btn btn-primary" href="{% url 'resume' %}">My Resume</a>
+      </div>
+      <div class="landing-links">
+        <a href="mailto:jr5887@nyu.edu">jr5887@nyu.edu</a>
+        <span aria-hidden="true" class="sep">|</span>
+        <a href="https://linkedin.com/in/jiyuanren" target="_blank" rel="noreferrer">LinkedIn</a>
+        <span aria-hidden="true" class="sep">|</span>
+        <a href="https://github.com/123R3N321" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
