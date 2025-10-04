@@ -8,15 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Use your Makefile targets. We override USE_SUDO to avoid sudo in the runner.
       - name: Build & sanity-check via Makefile
-        run: |
-          make ci USE_SUDO=
+        run: make ci ENV_FILE=.env.example
