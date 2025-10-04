@@ -34,10 +34,13 @@ shell:
 check:
 	$(DC_RUN) sh -c 'python manage.py check --verbosity 2'
 
-smoke:
-	$(DC_RUN) python -c "import importlib; importlib.import_module('FoodTok'); print('FoodTok import OK')"
+test:
+	$(DC) run --rm --no-deps $(APP) python manage.py test --verbosity 2
 
-ci: build check smoke
+smoke:
+	$(DC_RUN) python3 -c "import importlib; importlib.import_module('FoodTok'); print('FoodTok import OK')"
+
+ci: build check smoke test
 
 # Make more helper functions later.
 
