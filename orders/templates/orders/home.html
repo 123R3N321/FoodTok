@@ -1,7 +1,107 @@
 <!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>FoodTok</title></head>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FoodTok | Discover and Order Food Together</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(180deg, #fff 0%, #f8f9fb 100%);
+        color: #222;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+
+      .logo {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #e63946;
+      }
+
+      nav a {
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .hero {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        height: 80vh;
+        padding: 2rem;
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        max-width: 600px;
+        margin-bottom: 2rem;
+      }
+
+      .btn-primary {
+        background: #e63946;
+        color: #fff;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s ease;
+      }
+
+      .btn-primary:hover {
+        background: #c92c3b;
+      }
+
+      footer {
+        text-align: center;
+        padding: 1.5rem;
+        background: #fff;
+        border-top: 1px solid #eee;
+        font-size: 0.9rem;
+        color: #666;
+      }
+    </style>
+  </head>
+
   <body>
-    <h1>Welcome to FoodTok</h1>
+    <header>
+      <div class="logo">FoodTok</div>
+      <nav>
+        <a href="#">Home</a>
+        <a href="#">Features</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Discover & Order Food Together</h1>
+      <p>FoodTok lets you and your friends find, share, and order food from local restaurants — all in one app.</p>
+      <a href="#" class="btn-primary">Get Started</a>
+    </section>
+
+    <footer>
+      This placeholder was made with GPT-5.0
+    </footer>
   </body>
 </html>
