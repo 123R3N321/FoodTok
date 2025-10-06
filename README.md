@@ -24,29 +24,9 @@ This project is containerized with Docker and managed via a Makefile for a consi
 ### Prerequisites
 - Install [Docker](https://docs.docker.com/get-docker/) (v20+ recommended)
 - Install [Docker Compose](https://docs.docker.com/compose/) (built into Docker Desktop / CLI v2)
-- You also need GNU `make` 
+- You also need GNU make 
     - This is installed by default on MacOS/Linux
     - You need to install it on Windows machines
-
-### Setup your local environment
-Add environment variables to a file
-
-```bash
-touch .env.example
-```
-
-Add variables to the file for local environment
-```bash
-#.env.example
-SECRET_KEY='super-secret-key'
-DEBUG=1
-Allowed_Hosts=127.0.0.1,localhost
-```
-
-Copy to .env
-```bash
-cp .env.example .env
-```
 
 ### Build and Start the App
 ```bash
@@ -67,3 +47,9 @@ You should see the app running
 make down
 ```
 Now is you run the docker ps (make ps) command, you won't see any containers running and the app is turned off.
+
+### Using the app
+
+This is what the homepage looks like
+
+![Homepage Image](/docs/PNGs/homepage.png)
