@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+WORKDIR /app/ecs_app
+COPY . .
+RUN pip install flask boto3
+EXPOSE 8080
+CMD ["python", "app.py"]
