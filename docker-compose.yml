@@ -14,6 +14,8 @@ services:
     depends_on:
       dynamo:
         condition: service_started
+      localstack:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/healthz || exit 1"]
       interval: 10s
@@ -25,3 +27,26 @@ services:
     ports:
       - "8000:8000"
     command: -jar DynamoDBLocal.jar -sharedDb
+
+  localstack:
+    image: localstack/localstack:3.2.0
+    container_name: localstack
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - DEBUG=1
+      - PERSISTENCE=1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    ports:
+      - "4566:4566"
+    volumes:
+      # optional persistence on your host
+      - ./local/localstack:/var/lib/localstack
+      # optional init scripts (see step 4)
+      - ./infra/localstack/init/ready.d:/etc/localstack/init/ready.d
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
