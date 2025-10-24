@@ -1,0 +1,7 @@
+FROM amazon/dynamodb-local:latest
+USER root
+# Try common package managers; one will succeed depending on base image
+RUN (yum -y install curl && yum clean all) || \
+    (apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*) || \
+    (apk add --no-cache curl)
+HEALTHCHECK --interval=10s --timeout=3s --retries=12 CMD curl -fsS http://localhost:8000/shell/ || exit 1

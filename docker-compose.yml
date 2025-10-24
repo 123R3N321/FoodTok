@@ -27,6 +27,12 @@ services:
     ports:
       - "8000:8000"
     command: -jar DynamoDBLocal.jar -sharedDb
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000 | grep -q 400 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   localstack:
     image: localstack/localstack:3.2.0
