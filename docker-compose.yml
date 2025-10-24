@@ -2,12 +2,26 @@ services:
   web:
     build:
       context: .
-    command: python manage.py runserver 0.0.0.0:8000
+      dockerfile: Dockerfile
+    container_name: foodtok-web
+    command: bash -lc "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
+    env_file:
+      - .env.dev
     volumes:
       - .:/app
     ports:
+      - "8080:8080"
+    depends_on:
+      dynamo:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  dynamo:
+    image: amazon/dynamodb-local
+    ports:
       - "8000:8000"
-    env_file: .env.example
-
-
-## Add DB dependancies latter
+    command: -jar DynamoDBLocal.jar -sharedDb

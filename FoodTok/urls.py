@@ -16,8 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def healthz(request):
+    return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
+    path("healthz", healthz),
     path('admin/', admin.site.urls),
     path('', include('orders.urls')),  # Orders app home
 ]
