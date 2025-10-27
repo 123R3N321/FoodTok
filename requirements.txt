@@ -4,3 +4,4 @@ sqlparse==0.5.3
 dj-database-url>=2.1
 gunicorn>=22.0
 boto3>=1.28
+awscli==1.34.23

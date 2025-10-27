@@ -7,13 +7,20 @@ services:
     command: bash -lc "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
     env_file:
       - .env.dev
+    environment:
+      - IS_LOCAL=true
+      - AWS_REGION=us-east-1
+      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
+      - LOCAL_S3_ENDPOINT=http://localstack:4566
+      - SEED_DYNAMO_TABLE=FoodTok
+      - SEED_S3_BUCKET=foodtok-local-images
     volumes:
       - .:/app
     ports:
       - "8080:8080"
     depends_on:
       dynamo:
-        condition: service_started
+        condition: service_healthy
       localstack:
         condition: service_healthy
     healthcheck:
