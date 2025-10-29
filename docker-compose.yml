@@ -1,13 +1,123 @@
+version: '3.8'
+
 services:
-  web:
-    build:
-      context: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
+  # -----------------------------
+  # DynamoDB Local
+  # -----------------------------
+  dynamo:
+    image: amazon/dynamodb-local
+    container_name: dynamo
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /data2"
     ports:
       - "8000:8000"
-    env_file: .env.example
+    volumes:
+      - ./local/dynamo:/data2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000 | grep -q 400 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - localstack-net
 
+  # -----------------------------
+  # S3 Local
+  # -----------------------------
+  localstack:
+    image: localstack/localstack:3.2.0
+    container_name: localstack
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - PERSISTENCE=1
+      - LS_PERSISTENCE=1
+      - LS_LOG=debug
+    volumes:
+      - ./local/localstack:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - localstack-net
 
-## Add DB dependancies latter
+  # -----------------------------
+  # ECS Flask App (Local)
+  # -----------------------------
+  ecs-app:
+    build:
+      context: ./ecs_app
+      dockerfile: Dockerfile.ecs
+    container_name: ecs-app
+    environment:
+      - IS_LOCAL=true
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - TABLE_NAME=FoodTokLocal
+      - IMAGE_BUCKET=foodtok-local-images
+      - DYNAMODB_ENDPOINT=http://dynamo:8000
+      - S3_ENDPOINT=http://localstack:4566
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dynamo
+      - localstack
+      - local_config
+    networks:
+      - localstack-net
+
+  local_config:
+    build:
+      context: ./ecs_app
+      dockerfile: Dockerfile.local_config
+    container_name: local_config
+    depends_on:
+      dynamo:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    environment:
+      - IS_LOCAL=true
+      - AWS_REGION=us-east-1
+      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
+      - LOCAL_S3_ENDPOINT=http://localstack:4566
+    command: ["python", "/app/ecs_app/local_config.py"]
+    networks:
+      - localstack-net
+
+  local_seed:
+    build:
+      context: ./ecs_app
+      dockerfile: Dockerfile.seed
+    container_name: local_seed
+    depends_on:
+      local_config:
+        condition: service_completed_successfully
+      dynamo:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    environment:
+      - IS_LOCAL=true
+      - AWS_REGION=us-east-1
+      - SEED_S3_BUCKET=foodtok-local-images
+      - SEED_DYNAMO_TABLE=FoodTokLocal
+      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
+      - LOCAL_S3_ENDPOINT=http://localstack:4566
+    volumes:
+      - ./seed_data:/app/seed_data
+    command: ["python", "/app/ecs_app/seed_data.py"] 
+    networks:
+      - localstack-net
+
+networks:
+  localstack-net:
+    driver: bridge
