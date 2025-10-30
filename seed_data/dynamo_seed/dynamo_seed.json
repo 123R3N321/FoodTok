@@ -1,0 +1,14 @@
+[
+  {
+    "userId": "0001",
+    "random_value": "123"
+  },
+  {
+    "userId": "0002",
+    "random_value": "456"
+  },
+  {
+    "userId": "0003",
+    "random_value": "789"
+  }
+]

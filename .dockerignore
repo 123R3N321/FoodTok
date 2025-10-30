@@ -1,10 +1,29 @@
-.venv
+# Ignore cache, environments, git, and large local data
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.sqlite3
+*.log
+*.DS_Store
+
+# Ignore project-local data and build artifacts
+local/
+.venv/
 .env
-.git
+.git/
 .gitignore
+*.tar
+*.zip
+*.gz
+
+# Matthew's original .dockerignore content (can be updated as needed later)
+# .venv
+# __pycache__/
+# *.pyc
+# *.pyo
+# *.pyd
+*.sqlite3
+# .env
+# .git
+# .gitignore
 docs/

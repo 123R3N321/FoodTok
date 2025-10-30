@@ -1,6 +1,35 @@
-./.idea
-.idea/*
+# Local DynamoDB/S3 data
+local/
+
+# Node & CDK build artifacts
+node_modules/
+cdk.out/
+package-lock.json
+
+# Python virtual environments (if used for Lambda or ECS local testing)
+venv/
 .venv
-.env
-/__pycache__/
+.env/
+__pycache__/
 *.pyc
+
+# Lambda build artifacts
+cdk/lambda/lambda.zip
+*.zip
+
+# Docker build cache
+*.log
+*.tmp
+*.bak
+
+# IDE/editor metadata
+.vscode/
+.idea/
+*.swp
+
+# System files
+Thumbs.db
+.DS_Store
+
+# test result record
+test-output.json
