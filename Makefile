@@ -111,7 +111,7 @@ help:
 # Project Build Helper Commands
 # ---------------------------
 DC = docker compose
-APP = web
+APP = django-web
 ENV_FILE ?= .env.example # We might need to change this in the future to use real env file locally
 DC_RUN = $(DC) --env-file $(ENV_FILE) run --rm --no-deps $(APP)
 
