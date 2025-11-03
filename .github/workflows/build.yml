@@ -15,5 +15,5 @@ jobs:
       - name: Create ci .env
         run: cp .env.example .env
 
-#      - name: Build & run tests via Makefile
-#        run: make ci
+      - name: Build & run tests via Makefile
+        run: make ci
