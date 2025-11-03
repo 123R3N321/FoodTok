@@ -118,6 +118,34 @@ services:
     networks:
       - localstack-net
 
+  django-web:
+    build:
+      context: .                # <-- same dir as manage.py & Dockerfile.django
+      dockerfile: Dockerfile.django
+    container_name: django-web
+    environment:
+      - DJANGO_SETTINGS_MODULE=FoodTok.settings        # or your module path
+      - AWS_REGION=us-east-1
+      - DYNAMODB_ENDPOINT=http://dynamo:8000
+      - S3_ENDPOINT=http://localstack:4566
+    volumes:
+      - ./:/app                 # mount project root into /app
+    working_dir: /app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8001"
+    ports:
+      - "8001:8001"
+    depends_on:
+      dynamo:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      local_config:
+        condition: service_completed_successfully
+    networks:
+      - localstack-net
+
 networks:
   localstack-net:
     driver: bridge

@@ -16,8 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
+
+
+def healthz(_request):
+    return HttpResponse("ok", content_type="text/plain") 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('orders.urls')),  # Orders app home
+    path("healthz/", healthz),
 ]
