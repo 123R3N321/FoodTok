@@ -16,6 +16,7 @@ interface TestRunnerProps {
 
 export class TestRunnerConstruct extends Construct {
     public readonly fn: Function;
+    public readonly fnAllApis: Function;
 
     constructor(scope: Construct, id: string, props: TestRunnerProps) {
         super(scope, id);
@@ -32,6 +33,37 @@ export class TestRunnerConstruct extends Construct {
                 CLEANUP_USER: props.cleanupUser === false ? 'false' : 'true',
             },
         });
+
+        this.fnAllApis = new Function(this, `${props.projectPrefix}-TestAllApis`, {
+            functionName: `${props.projectPrefix}-TestAllApis`,
+            runtime: Runtime.PYTHON_3_12,
+            handler: 'test_all_apis.lambda_handler',
+            code: Code.fromAsset(join(__dirname, '../../lambda')),
+            timeout: Duration.minutes(2),
+            environment: {
+                PROJECT_PREFIX: props.projectPrefix,
+                TEST_EMAIL_BASE: 'apitestuser@example.com', // will be uniquified by the test
+                TEST_PASSWORD: props.testPassword ?? 'P@ssword1234',
+                TEST_USERNAME: 'apitest',
+                CLEANUP_USER: props.cleanupUser === false ? 'false' : 'true',
+                INCLUDE_TOKENS: 'false',
+            },
+        });
+
+        this.fnAllApis.addToRolePolicy(new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: ['cloudformation:ListExports'],
+            resources: ['*'],
+        }));
+
+        this.fnAllApis.addToRolePolicy(new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+                'cognito-idp:AdminConfirmSignUp',
+                'cognito-idp:AdminDeleteUser',
+            ],
+            resources: ['*'], // Admin* APIs don't support resource ARNs well; keep '*'
+        }));
 
         // Permissions: CloudFormation list exports
         this.fn.addToRolePolicy(new PolicyStatement({

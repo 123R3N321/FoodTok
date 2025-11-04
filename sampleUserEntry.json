@@ -1,0 +1,12 @@
+{
+  "userId": "cognito-sub",
+  "email": "testuser@example.com",
+  "preferred_username": "testy",
+  "profilePicUrl": "",
+  "bio": "",
+  "role": "user",
+  "status": "active",
+  "version": 1,
+  "createdAt": "2025-11-03T12:34:56Z",
+  "updatedAt": "2025-11-03T12:34:56Z"
+}

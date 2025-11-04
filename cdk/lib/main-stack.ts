@@ -9,6 +9,8 @@ import { ECSConstruct } from './constructs/ecs';
 import {CognitoUserPoolsAuthorizer} from "aws-cdk-lib/aws-apigateway";
 import {CognitoConstruct} from "./constructs/cognito";
 import { TestRunnerConstruct } from './constructs/test_runner';
+import { UserConstruct } from './constructs/user';
+
 
 export class MainStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -38,14 +40,24 @@ export class MainStack extends Stack {
       ecsLoadBalancerDns: ecs.loadBalancerDns, 
       projectPrefix,
         userPool:cognito.userPool,  //pass in user pool as additional param
+        userPoolClientId:cognito.userPoolClient.userPoolClientId,   //authentication -- identification
     });
+
+    const users = new UserConstruct(this, `${projectPrefix}-UsersConstruct`, {
+          projectPrefix,
+          userPool: cognito.userPool,
+          addUsernameGsi: false, // flip to true if you need handle lookups
+    });
+
+      lambda.fn.addEnvironment('USERS_TABLE_NAME', users.table.tableName);
+      users.table.grantReadData(lambda.fn);
 
       const testRunner = new TestRunnerConstruct(this, 'TestRunner', {
           projectPrefix,
           userPool: cognito.userPool,
           userPoolClient: cognito.userPoolClient,
-          testEmail: 'testuser@example.com',      // optional
-          testPassword: 'P@ssword1234',           // optional
+          // testEmail: 'testuser@example.com',      // optional
+          // testPassword: 'P@ssword1234',           // optional
           cleanupUser: true,                      // optional
       });
 
@@ -94,9 +106,14 @@ export class MainStack extends Stack {
     });
 
         //just for makefile use
-      new cdk.CfnOutput(this, 'TestRunnerFnName', {
-          value: testRunner.fn.functionName,
-          exportName: `${projectPrefix}-TestRunnerFnName`,
+      // new cdk.CfnOutput(this, 'TestRunnerFnName', {
+      //     value: testRunner.fn.functionName,
+      //     exportName: `${projectPrefix}-TestRunnerFnName`,
+      // });
+
+      new cdk.CfnOutput(this, 'TestAllApisFnName', {
+          value: testRunner.fnAllApis.functionName,
+          exportName: `${projectPrefix}-TestAllApisFnName`,
       });
     
   }

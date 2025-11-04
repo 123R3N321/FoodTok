@@ -1,5 +1,6 @@
 import { Construct } from 'constructs';
 import { UserPool, UserPoolClient, OAuthScope, AccountRecovery } from 'aws-cdk-lib/aws-cognito';
+import * as cdk from 'aws-cdk-lib';
 
 interface CognitoProps {
     projectPrefix: string;
@@ -34,6 +35,7 @@ export class CognitoConstruct extends Construct {
             //the verification email stuff is default template code.
         });
 
+        this.userPool.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
         this.userPoolClient = this.userPool.addClient(`${props.projectPrefix}-UserPoolClient`, {
             userPoolClientName: `${props.projectPrefix}-WebClient`,
@@ -53,5 +55,7 @@ export class CognitoConstruct extends Construct {
             generateSecret: false, // public web/mobile clients shouldn’t have a client secret
             //we will hate secret anyway trust me
         });
+        this.userPoolClient.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+
     }
 }

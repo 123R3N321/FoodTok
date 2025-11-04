@@ -1,0 +1,7 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"ok\": false, \"signUp\": {\"userConfirmed\": false, \"userSub\": \"64685478-d031-70c0-3e45-47d13fef10d9\", \"delivery\": {\"destination\": \"a***@e***\", \"medium\": \"EMAIL\"}}, \"signIn\": {\"idToken\": \"\\u2026\", \"accessToken\": \"\\u2026\", \"refreshToken\": \"\\u2026\", \"expiresIn\": 3600, \"tokenType\": \"Bearer\"}, \"me\": {\"error\": \"Object of type Decimal is not JSON serializable\"}, \"debug\": {\"api_url\": \"https://4txepo3i5k.execute-api.us-east-1.amazonaws.com/prod/\", \"region\": \"us-east-1\", \"user_pool_id\": \"us-east-1_yIY97m8Gp\", \"email\": \"apitestuser+2wcqni@example.com\", \"username\": \"apitest\", \"steps\": [{\"signUp_status\": 200, \"signUp_resp\": {\"userConfirmed\": false, \"userSub\": \"64685478-d031-70c0-3e45-47d13fef10d9\", \"delivery\": {\"destination\": \"a***@e***\", \"medium\": \"EMAIL\"}}}, {\"admin_confirm\": \"ok\"}, {\"signIn_status\": 200, \"signIn_resp\": {\"idToken\": \"\\u2026\", \"accessToken\": \"\\u2026\", \"refreshToken\": \"\\u2026\", \"expiresIn\": 3600, \"tokenType\": \"Bearer\"}, \"id_token_peek\": {\"iss\": \"https://cognito-idp.us-east-1.amazonaws.com/us-east-1_yIY97m8Gp\", \"aud\": \"2lsmge4tv7m90fr4o905m3rr14\", \"token_use\": \"id\"}}, {\"me_status\": 500, \"me_resp\": {\"error\": \"Object of type Decimal is not JSON serializable\"}}]}}"
+}

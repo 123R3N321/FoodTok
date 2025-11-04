@@ -6,6 +6,9 @@ from datetime import datetime
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 
+_users_table_name = os.environ.get("USERS_TABLE_NAME")
+users_table = dynamodb.Table(_users_table_name) if _users_table_name else None
+
 def _get_claims(event):
     # REST API (v1) + Cognito Authorizer
     rc = event.get("requestContext", {}) or {}
@@ -34,6 +37,41 @@ def lambda_handler(event, context):
                 "whoami": {"sub": user_sub, "username": username, "email": email}
             }),
         }
+
+    elif path.endswith("/me") and method == "GET":
+        if not users_table:
+            return {
+                "statusCode": 500,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Users table not configured"}),
+            }
+        if not user_sub:
+            return {
+                "statusCode": 401,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "unauthorized"}),
+            }
+        try:
+            resp = users_table.get_item(Key={"userId": user_sub})
+            item = resp.get("Item")
+            if not item:
+                # Profile not created yet (should exist after Post Confirmation)
+                return {
+                    "statusCode": 404,
+                    "headers": {"Content-Type": "application/json"},
+                    "body": json.dumps({"error": "profile_not_found"}),
+                }
+            return {
+                "statusCode": 200,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps(item),
+            }
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": str(e)}),
+            }
 
     # /insert endpoint
     elif path.endswith("/insert") and method == "POST":

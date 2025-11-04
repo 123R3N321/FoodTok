@@ -58,16 +58,16 @@ deploy:
 
 	@echo "Running Lambda test-runner (currently only E2E)..."
 	FN_NAME=$$(aws cloudformation list-exports --profile $(PROFILE) \
-	  --query "Exports[?Name=='$(PROJECT_PREFIX)-TestRunnerFnName'].Value | [0]" --output text); \
+	  --query "Exports[?Name=='$(PROJECT_PREFIX)-TestAllApisFnName'].Value | [0]" --output text); \
 	if [ -z "$$FN_NAME" ] || [ "$$FN_NAME" = "None" ]; then \
-	  echo "ERROR: Could not find export $(PROJECT_PREFIX)-TestRunnerFnName. Did you add CfnOutput and deploy?"; \
+	  echo "ERROR: Could not find export $(PROJECT_PREFIX)-TestAllApisFnName. Did you add CfnOutput and deploy?"; \
 	  exit 1; \
 	fi; \
 	echo "Invoking $$FN_NAME..."; \
 	aws lambda invoke --function-name $$FN_NAME --profile $(PROFILE) --cli-binary-format raw-in-base64-out \
-	  --payload '{}' ./tests/test-output.json >/dev/null; \
-	echo "Lambda returned (stored in test-output.json in project root dir):"; \
-	cat ./test-output.json | jq .
+	  --payload '{}' ./tests/test-api-output.json >/dev/null; \
+	echo "Lambda returned (stored in test-api-output.json in tests/ dir):"; \
+	cat ./tests/test-api-output.json
 
 # ---------------------------
 # verification: can also manually run from tests/run_api_from_test_output.py
@@ -76,6 +76,20 @@ deploy:
 verify:
 	@echo "Verifying deployed API via test-output.json..."
 	python3 tests/run_api_from_test_output.py
+
+test:
+	@echo "Running Lambda test-runner (currently only E2E)..."
+	FN_NAME=$$(aws cloudformation list-exports --profile $(PROFILE) \
+	  --query "Exports[?Name=='$(PROJECT_PREFIX)-TestAllApisFnName'].Value | [0]" --output text); \
+	if [ -z "$$FN_NAME" ] || [ "$$FN_NAME" = "None" ]; then \
+	  echo "ERROR: Could not find export $(PROJECT_PREFIX)-TestAllApisFnName. Did you add CfnOutput and deploy?"; \
+	  exit 1; \
+	fi; \
+	echo "Invoking $$FN_NAME..."; \
+	aws lambda invoke --function-name $$FN_NAME --profile $(PROFILE) --cli-binary-format raw-in-base64-out \
+	  --payload '{}' ./tests/test-api-output.json >/dev/null; \
+	echo "Lambda returned (stored in test-api-output.json in tests/ dir):"; \
+	cat ./tests/test-api-output.json
 
 # ---------------------------
 # Teardown
