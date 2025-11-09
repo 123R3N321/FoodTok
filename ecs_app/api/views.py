@@ -4,6 +4,8 @@ import uuid
 import random
 from io import BytesIO
 from django.http import JsonResponse
+from django.shortcuts import render
+
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -116,6 +118,22 @@ def download_file(request, filename):
 # ----------------------------------------------------
 @api_view(["GET"])
 def get_restaurants(request):
+    try:
+        table = dynamodb.Table(RESTAURANTS)
+        response = table.scan()
+
+        items = response.get("Items", [])
+        return JsonResponse(items, safe=False, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+# ----------------------------------------------------
+# home view (sanity check)
+# ----------------------------------------------------
+
+def home(request):
+    # return render(request, "ecs_app/home.html", {})
     try:
         table = dynamodb.Table(RESTAURANTS)
         response = table.scan()

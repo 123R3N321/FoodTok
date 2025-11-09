@@ -10,4 +10,5 @@ urlpatterns = [
     path("downloadECS/<str:filename>", views.download_file),
 
     path("restaurants", views.get_restaurants),
+    path("", views.home, name="api-home"),
 ]
