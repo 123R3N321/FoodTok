@@ -7,15 +7,24 @@ export interface DdbProps {
 }
 
 export class DdbConstruct extends Construct {
-  public readonly table: Table;
+  public readonly users: Table;
+  public readonly restaurants: Table;
 
   constructor(scope: Construct, id: string, props: DdbProps) {
     super(scope, id);
 
-    this.table = new Table(this, `${props.projectPrefix}-UserTable`, {
+    this.users = new Table(this, `${props.projectPrefix}-Users`, {
       partitionKey: { name: 'userId', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
+
+    this.restaurants = new Table(this, `${props.projectPrefix}-Restaurants`, {
+      partitionKey: { name: 'id', type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    // Build additonal tables as needed using the structure above
   }
 }

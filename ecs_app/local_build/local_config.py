@@ -2,6 +2,8 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 
+from dynamo_schemas import DynamoTables
+
 def create_dynamodb_table(dynamodb, table_name: str):
     """Create DynamoDB table if it doesn’t exist."""
     try:
@@ -11,14 +13,29 @@ def create_dynamodb_table(dynamodb, table_name: str):
             return
 
         print(f"Creating DynamoDB table: {table_name}")
+
+        if table_name == DynamoTables.USERS.value:
+            key_schema = [{"AttributeName": "userId", "KeyType": "HASH"}]
+            attr_defs = [{"AttributeName": "userId", "AttributeType": "S"}]
+
+        elif table_name == DynamoTables.RESTAURANTS.value:
+            key_schema = [{"AttributeName": "id", "KeyType": "HASH"}]
+            attr_defs = [{"AttributeName": "id", "AttributeType": "S"}]
+
+        else:
+            raise Exception(f"Unknown table schema for {table_name}")
+        
+
         table = dynamodb.create_table(
             TableName=table_name,
-            KeySchema=[{"AttributeName": "userId", "KeyType": "HASH"}],
-            AttributeDefinitions=[{"AttributeName": "userId", "AttributeType": "S"}],
+            KeySchema=key_schema,
+            AttributeDefinitions=attr_defs,
             BillingMode="PAY_PER_REQUEST",
         )
+
         table.wait_until_exists()
         print(f"DynamoDB table '{table_name}' created successfully.")
+
     except ClientError as e:
         print(f"DynamoDB creation error: {e}")
 
@@ -45,9 +62,13 @@ def create_s3_bucket(s3_client, bucket_name: str, region: str):
 def main():
     print("Starting setup...")
 
+    # Can be moved to DC.yml file
     is_local = os.getenv("IS_LOCAL", "true").lower() == "true"
     region = os.getenv("AWS_REGION", "us-east-1")
-    table_name = os.getenv("SEED_DYNAMO_TABLE", "FoodTokLocal")
+
+    # Add DDB tables and S3 Buckets here
+    users = os.getenv("SEED_DDB_USERS", "Users")
+    restaurants = os.getenv("SEED_DDB_RESTAURANTS", "Restaurants")
     bucket_name = os.getenv("SEED_S3_BUCKET", "foodtok-local-images")
 
     if is_local:
@@ -75,7 +96,9 @@ def main():
         aws_secret_access_key="test" if is_local else None,
     )
 
-    create_dynamodb_table(dynamodb, table_name)
+    # Create DDB tables and S3 Buckets here
+    create_dynamodb_table(dynamodb, users)
+    create_dynamodb_table(dynamodb, restaurants)
     create_s3_bucket(s3, bucket_name, region)
 
     print("Setup completed successfully!")

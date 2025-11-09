@@ -9,7 +9,8 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 
 interface ECSProps {
-  table: Table;
+  users: Table;
+  restaurants: Table;
   imageBucket: Bucket;
   projectPrefix: string;
 }
@@ -42,9 +43,12 @@ export class ECSConstruct extends Construct {
         platform: Platform.LINUX_AMD64,
       }), 
       environment: {
-        TABLE_NAME: props.table.tableName,
+        DDB_USERS: props.users.tableName,
+        DDB_RESTAURANTS: props.restaurants.tableName,
         IMAGE_BUCKET: props.imageBucket.bucketName,
         AWS_REGION: process.env.CDK_DEFAULT_REGION ?? 'us-east-1',
+        IS_LOCAL: 'false',
+        DJANGO_SETTINGS_MODULE: 'ecs_project.settings'
       },
       logging: LogDriver.awsLogs({
         logGroup,
@@ -75,11 +79,12 @@ export class ECSConstruct extends Construct {
       port: 80,
       protocol: ApplicationProtocol.HTTP,
       targets: [service],
-      healthCheck: { path: '/helloECS' },
+      healthCheck: { path: '/api/helloECS' },
     });
 
     // Grant ECS Task IAM permissions
-    props.table.grantReadWriteData(taskDef.taskRole);
+    props.users.grantReadWriteData(taskDef.taskRole);
+    props.restaurants.grantReadWriteData(taskDef.taskRole);
     props.imageBucket.grantReadWrite(taskDef.taskRole);
 
     this.loadBalancerDns = lb.loadBalancerDnsName;

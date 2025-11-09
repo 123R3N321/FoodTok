@@ -19,13 +19,14 @@ export class MainStack extends Stack {
     const s3 = new S3Construct(this, 'S3Construct', { projectPrefix });
     const ddb = new DdbConstruct(this, 'DdbConstruct', { projectPrefix });
     const lambda = new LambdaConstruct(this, 'LambdaConstruct', {
-      table: ddb.table,
+      table: ddb.users,
       imageBucket: s3.imageBucket,
       projectPrefix,
     });
 
     const ecs = new ECSConstruct(this, 'ECSConstruct', {
-      table: ddb.table,
+      users: ddb.users,
+      restaurants: ddb.restaurants,
       imageBucket: s3.imageBucket,
       projectPrefix,
     });
@@ -40,14 +41,14 @@ export class MainStack extends Stack {
         userPool:cognito.userPool,  //pass in user pool as additional param
     });
 
-      const testRunner = new TestRunnerConstruct(this, 'TestRunner', {
-          projectPrefix,
-          userPool: cognito.userPool,
-          userPoolClient: cognito.userPoolClient,
-          testEmail: 'testuser@example.com',      // optional
-          testPassword: 'P@ssword1234',           // optional
-          cleanupUser: true,                      // optional
-      });
+    const testRunner = new TestRunnerConstruct(this, 'TestRunner', {
+        projectPrefix,
+        userPool: cognito.userPool,
+        userPoolClient: cognito.userPoolClient,
+        testEmail: 'testuser@example.com',      // optional
+        testPassword: 'P@ssword1234',           // optional
+        cleanupUser: true,                      // optional
+    });
 
     new cdk.CfnOutput(this, 'ApiGatewayUrl', {
       value: api_gateway.apiUrl,
@@ -55,23 +56,23 @@ export class MainStack extends Stack {
         description: 'Invoke your Lambda endpoints',
     });
 
-      new cdk.CfnOutput(this, 'UserPoolId', {
-          value: cognito.userPool.userPoolId,
-          exportName: `${projectPrefix}-UserPoolId`,
-          description: 'generated user pool ID',
-      });
+    new cdk.CfnOutput(this, 'UserPoolId', {
+        value: cognito.userPool.userPoolId,
+        exportName: `${projectPrefix}-UserPoolId`,
+        description: 'generated user pool ID',
+    });
 
-      new cdk.CfnOutput(this, 'UserPoolClientId', {
-          value: cognito.userPoolClient.userPoolClientId,
-          exportName: `${projectPrefix}-UserPoolClientId`,
-            description: 'generated user pool client ID',
-      });
+    new cdk.CfnOutput(this, 'UserPoolClientId', {
+        value: cognito.userPoolClient.userPoolClientId,
+        exportName: `${projectPrefix}-UserPoolClientId`,
+          description: 'generated user pool client ID',
+    });
 
-      new cdk.CfnOutput(this, 'AwsRegion', {
-          value: this.region,
-          exportName: `${projectPrefix}-Region`,
-            description: "should be us-east-1 by default, but verbosity helps debug"
-      });
+    new cdk.CfnOutput(this, 'AwsRegion', {
+        value: this.region,
+        exportName: `${projectPrefix}-Region`,
+          description: "should be us-east-1 by default, but verbosity helps debug"
+    });
 
     new cdk.CfnOutput(this, 'ECSLoadBalancerDNS', {
       value: ecs.loadBalancerDns,
@@ -88,16 +89,21 @@ export class MainStack extends Stack {
       description: 'S3 Image Bucket Name',
     });
 
-    new cdk.CfnOutput(this, 'DynamoDBTableName', {
-      value: ddb.table.tableName,
-      description: 'DynamoDB Table Name',
+    new cdk.CfnOutput(this, 'DDB_Users', {
+      value: ddb.users.tableName,
+      description: 'DynamoDB Users Table Name',
     });
 
-        //just for makefile use
-      new cdk.CfnOutput(this, 'TestRunnerFnName', {
-          value: testRunner.fn.functionName,
-          exportName: `${projectPrefix}-TestRunnerFnName`,
-      });
+    new cdk.CfnOutput(this, 'DDB_Restaurants', {
+      value: ddb.restaurants.tableName,
+      description: 'DynamoDB Restaurants Table Name',
+    });
+
+      //just for makefile use
+    new cdk.CfnOutput(this, 'TestRunnerFnName', {
+        value: testRunner.fn.functionName,
+        exportName: `${projectPrefix}-TestRunnerFnName`,
+    });
     
   }
 }

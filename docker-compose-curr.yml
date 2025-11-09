@@ -48,26 +48,25 @@ services:
     networks:
       - localstack-net
 
+  # -----------------------------
+  # ECS Flask App (Local)
+  # -----------------------------
   ecs-app:
     build:
-      context: ./ecs_app               
-      dockerfile: Dockerfile.ecs       
+      context: ./ecs_app
+      dockerfile: Dockerfile.ecs
     container_name: ecs-app
     environment:
       - IS_LOCAL=true
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_REGION=us-east-1
-      - SEED_DDB_USERS=Users
-      - SEED_DDB_RESTAURANTS=Restaurants
+      - TABLE_NAME=FoodTokLocal
       - IMAGE_BUCKET=foodtok-local-images
       - DYNAMODB_ENDPOINT=http://dynamo:8000
       - S3_ENDPOINT=http://localstack:4566
-      - DJANGO_SETTINGS_MODULE=ecs_project.settings
     ports:
-      - "8080:8080"       
-    command: >
-      sh -c "python manage.py runserver 0.0.0.0:8080"
+      - "8080:8080"
     depends_on:
       - dynamo
       - localstack
@@ -77,7 +76,7 @@ services:
 
   local_config:
     build:
-      context: ./ecs_app/local_build
+      context: ./ecs_app
       dockerfile: Dockerfile.local_config
     container_name: local_config
     depends_on:
@@ -88,30 +87,17 @@ services:
     environment:
       - IS_LOCAL=true
       - AWS_REGION=us-east-1
-      - SEED_DDB_USERS=Users
-      - SEED_DDB_RESTAURANTS=Restaurants
       - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
       - LOCAL_S3_ENDPOINT=http://localstack:4566
-    command: ["python", "/app/local_build/local_config.py"]
+    command: ["python", "/app/ecs_app/local_config.py"]
     networks:
       - localstack-net
 
   local_seed:
     build:
-      context: ./ecs_app/local_build
+      context: ./ecs_app
       dockerfile: Dockerfile.seed
     container_name: local_seed
-    environment:
-      - IS_LOCAL=true
-      - AWS_REGION=us-east-1
-      - SEED_DDB_USERS=Users
-      - SEED_DDB_RESTAURANTS=Restaurants
-      - SEED_S3_BUCKET=foodtok-local-images
-      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
-      - LOCAL_S3_ENDPOINT=http://localstack:4566
-    volumes:
-      - ./seed_data:/app/seed_data
-    command: ["python", "/app/local_build/seed_data.py"] 
     depends_on:
       local_config:
         condition: service_completed_successfully
@@ -119,6 +105,44 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+    environment:
+      - IS_LOCAL=true
+      - AWS_REGION=us-east-1
+      - SEED_S3_BUCKET=foodtok-local-images
+      - SEED_DYNAMO_TABLE=FoodTokLocal
+      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
+      - LOCAL_S3_ENDPOINT=http://localstack:4566
+    volumes:
+      - ./seed_data:/app/seed_data
+    command: ["python", "/app/ecs_app/seed_data.py"] 
+    networks:
+      - localstack-net
+
+  django-web:
+    build:
+      context: .                # <-- same dir as manage.py & Dockerfile.django
+      dockerfile: Dockerfile.django
+    container_name: django-web
+    environment:
+      - DJANGO_SETTINGS_MODULE=FoodTok.settings        # or your module path
+      - AWS_REGION=us-east-1
+      - DYNAMODB_ENDPOINT=http://dynamo:8000
+      - S3_ENDPOINT=http://localstack:4566
+    volumes:
+      - ./:/app                 # mount project root into /app
+    working_dir: /app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8001"
+    ports:
+      - "8001:8001"
+    depends_on:
+      dynamo:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      local_config:
+        condition: service_completed_successfully
     networks:
       - localstack-net
 

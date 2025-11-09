@@ -1,0 +1,22 @@
+[
+  {
+    "id": "rest1",
+    "name": "Sushi Zen",
+    "description": "Authentic Japanese sushi restaurant",
+    "cuisine": ["Japanese", "Sushi"],
+    "rating": 4.8,
+    "reviewCount": 132,
+    "priceRange": "$$",
+    "images": ["sushi1.jpg", "sushi2.jpg"],
+    "location": {
+      "address": "123 Sushi St",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "latitude": 40.7501,
+      "longitude": -73.9972
+    },
+    "deliveryTime": "25-40 min",
+    "deliveryFee": 2.99
+  }
+]
