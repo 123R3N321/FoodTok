@@ -1,5 +1,5 @@
 {
-  "name": "simpleproject-cdk",
+  "name": "Foodtok",
   "version": "1.0.0",
   "description": "AWS CDK app with S3, Lambda (Python), DynamoDB, and API Gateway",
   "main": "bin/cdk-app.ts",

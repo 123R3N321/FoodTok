@@ -2,25 +2,43 @@ import boto3
 import os
 import json
 import time
+from decimal import Decimal
 from botocore.exceptions import ClientError
 
+
+def marshal(obj):
+    """Recursively convert all float values to Decimal for DynamoDB."""
+    if isinstance(obj, list):
+        return [marshal(x) for x in obj]
+    elif isinstance(obj, dict):
+        return {k: marshal(v) for k, v in obj.items()}
+    elif isinstance(obj, float):
+        return Decimal(str(obj))   # Convert float -> Decimal safely
+    else:
+        return obj
+    
 def seed_dynamodb_table(dynamodb, table_name: str, seed_file_path: str):
     """Insert initial seed items into DynamoDB."""
     try:
-        table = dynamodb.Table(table_name)
         with open(seed_file_path, "r") as f:
             items = json.load(f)
 
         print(f"Seeding DynamoDB table '{table_name}' with {len(items)} items...")
+
+        table = dynamodb.Table(table_name)
+
         for item in items:
+            item = marshal(item)
             table.put_item(Item=item)
         print(f"DynamoDB table '{table_name}' seeded successfully.")
+
     except FileNotFoundError:
         print(f"DynamoDB seed file not found: {seed_file_path}")
     except ClientError as e:
         print(f"DynamoDB seeding error: {e}")
 
-def wait_for_bucket(s3_client, bucket_name, max_retries=10, delay=2):
+
+def wait_for_bucket(s3_client, bucket_name, max_retries=5, delay=2):
     """Wait until the specified S3 bucket exists."""
     for attempt in range(1, max_retries + 1):
         try:
@@ -69,12 +87,18 @@ def seed_s3_bucket(s3_client, bucket_name: str, seed_dir_path: str):
 def main():
     print("Starting data seeding...")
 
+    # Can be moved to DC.yml file
     is_local = os.getenv("IS_LOCAL", "true").lower() == "true"
     region = os.getenv("AWS_REGION", "us-east-1")
-    table_name = os.getenv("SEED_DYNAMO_TABLE", "FoodTokLocal")
+
+    # Add DDB tables and S3 Buckets here
+    users = os.getenv("SEED_DDB_USERS", "Users")
+    restaurants = os.getenv("SEED_DDB_RESTAURANTS", "Restaurants")
     bucket_name = os.getenv("SEED_S3_BUCKET", "foodtok-local-images")
 
-    dynamo_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "dynamo_seed.json")
+    # Add DDB tables and S3 Buckets seeding paths
+    users_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "users.json")
+    restaurants_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurants.json")
     s3_seed_dir = os.path.join("/app/seed_data", "s3_seed")
 
     if is_local:
@@ -102,7 +126,9 @@ def main():
         aws_secret_access_key="test" if is_local else None,
     )
 
-    seed_dynamodb_table(dynamodb, table_name, dynamo_seed_file_path)
+    # Seed DDB tables and S3 Buckets here
+    seed_dynamodb_table(dynamodb, users, users_seed_file_path)
+    seed_dynamodb_table(dynamodb, restaurants, restaurants_seed_file_path)
     seed_s3_bucket(s3, bucket_name, s3_seed_dir)
 
     print("Seeding completed successfully!")

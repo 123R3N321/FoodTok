@@ -1,4 +1,30 @@
 # ---------------------------
+# Docker Compose Makefile
+# ---------------------------
+DC := docker compose
+ifeq ($(USE_SUDO),1)
+DC := sudo docker compose
+endif
+
+APP = ecs-app
+DC_RUN = $(DC) run --rm --no-deps $(APP)
+
+build:
+	$(DC) build
+
+# ---- CI helpers ----
+check:
+	$(DC_RUN) sh -c 'python manage.py check --verbosity 2'
+
+test:
+	$(DC_RUN) python manage.py test --verbosity 2
+
+smoke:
+	$(DC_RUN) python3 -c "import importlib; importlib.import_module('ecs_project'); print('ecs_project import OK')"
+
+ci: build check smoke test
+
+# ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------
 PROJECT_PREFIX ?= FoodTok
@@ -106,51 +132,3 @@ help:
 	@echo "  make destroy     	- Destroy the stack"
 	@echo "  make clean       	- Remove local build artifacts"
 	@echo "  make update_lambda	- Remove local build artifacts"
-
-# ---------------------------
-# Project Build Helper Commands
-# ---------------------------
-DC = docker compose
-APP = django-web
-ENV_FILE ?= .env.example # We might need to change this in the future to use real env file locally
-DC_RUN = $(DC) --env-file $(ENV_FILE) run --rm --no-deps $(APP)
-
-.PHONY: build up ps down
-
-build:
-	@echo "Building Docker containers..."
-	$(DC) build
-
-up:
-	@echo "Starting Docker containers..."
-	$(DC) up -d
-
-down:
-	@echo "Stopping Docker containers..."
-	$(DC) down
-
-ps: 
-	@echo "Listing Docker containers..."
-	$(DC) ps
-
-# ---------------------------
-# CI and Smoke Tests
-# ---------------------------
-
-.PHONY: build test smoke
-
-build:
-	@echo "Building project..."
-	$(DC) build 
-	@echo "Build successful."
-
-test:
-	@echo "Running CI tests..."
-	python3 -m unittest discover -s tests # Need to update to run from Docker
-
-smoke: build
-	@echo "Running smoke test..."
-	$(DC_RUN) python3 manage.py check --deploy
-	@echo "Smoke test passed."
-
-ci: build smoke
