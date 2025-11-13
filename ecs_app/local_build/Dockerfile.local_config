@@ -4,6 +4,7 @@ WORKDIR /app/local_build
 
 COPY local_config.py .
 COPY dynamo_schemas.py .
+COPY data_schemas.py .
 RUN pip install boto3
 
 CMD ["python", "local_config.py"]

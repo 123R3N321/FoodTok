@@ -7,10 +7,39 @@ import { ApplicationLoadBalancer, ApplicationProtocol } from 'aws-cdk-lib/aws-el
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 
-
 interface ECSProps {
   users: Table;
   restaurants: Table;
+  reservations: Table;
+  userPreferences: Table;
+  userFavoriteCuisines: Table;
+  chainStores: Table;
+  restaurantHours: Table;
+  restaurantSpecialHours: Table;
+  cuisines: Table;
+  restaurantCuisines: Table;
+  amenities: Table;
+  restaurantAmenities: Table;
+  restaurantImages: Table;
+  diningTables: Table;
+  tableAvailability: Table;
+  tableAvailabilityOverrides: Table;
+  tableAvailabilitySnapshots: Table;
+  reservationTables: Table;
+  reservationHistory: Table;
+  waitlistEntries: Table;
+  reviews: Table;
+  reviewImages: Table;
+  reviewResponses: Table;
+  reviewHelpfulVotes: Table;
+  favorites: Table;
+  recommendationScores: Table;
+  userInteractions: Table;
+  notifications: Table;
+  admins: Table;
+  adminActivityLogs: Table;
+  userNoShowRecords: Table;
+  systemSettings: Table;  
   imageBucket: Bucket;
   projectPrefix: string;
 }
@@ -43,11 +72,42 @@ export class ECSConstruct extends Construct {
         platform: Platform.LINUX_AMD64,
       }), 
       environment: {
-        DDB_USERS: props.users.tableName,
-        DDB_RESTAURANTS: props.restaurants.tableName,
-        IMAGE_BUCKET: props.imageBucket.bucketName,
+        DDB_USERS_TABLE: props.users.tableName,
+        DDB_RESTAURANTS_TABLE: props.restaurants.tableName,
+        DDB_RESERVATIONS_TABLE: props.reservations.tableName,
+        DDB_USER_PREFERENCES_TABLE: props.userPreferences.tableName,
+        DDB_USER_FAVORITE_CUISINES_TABLE: props.userFavoriteCuisines.tableName,
+        DDB_CHAIN_STORES_TABLE: props.chainStores.tableName,
+        DDB_RESTAURANT_HOURS_TABLE: props.restaurantHours.tableName,
+        DDB_RESTAURANT_SPECIAL_HOURS_TABLE: props.restaurantSpecialHours.tableName,
+        DDB_CUISINES_TABLE: props.cuisines.tableName,
+        DDB_RESTAURANT_CUISINES_TABLE: props.restaurantCuisines.tableName,
+        DDB_AMENITIES_TABLE: props.amenities.tableName,
+        DDB_RESTAURANT_AMENITIES_TABLE: props.restaurantAmenities.tableName,
+        DDB_RESTAURANT_IMAGES_TABLE: props.restaurantImages.tableName,
+        DDB_DINING_TABLES_TABLE: props.diningTables.tableName,
+        DDB_TABLE_AVAILABILITY_TABLE: props.tableAvailability.tableName,
+        DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE: props.tableAvailabilityOverrides.tableName,
+        DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE: props.tableAvailabilitySnapshots.tableName,
+        DDB_RESERVATION_TABLES_TABLE: props.reservationTables.tableName,
+        DDB_RESERVATION_HISTORY_TABLE: props.reservationHistory.tableName,
+        DDB_WAITLIST_ENTRIES_TABLE: props.waitlistEntries.tableName,
+        DDB_REVIEWS_TABLE: props.reviews.tableName,
+        DDB_REVIEW_IMAGES_TABLE: props.reviewImages.tableName,
+        DDB_REVIEW_RESPONSES_TABLE: props.reviewResponses.tableName,
+        DDB_REVIEW_HELPFUL_VOTES_TABLE: props.reviewHelpfulVotes.tableName,
+        DDB_FAVORITES_TABLE: props.favorites.tableName,
+        DDB_RECOMMENDATION_SCORES_TABLE: props.recommendationScores.tableName,
+        DDB_USER_INTERACTIONS_TABLE: props.userInteractions.tableName,
+        DDB_NOTIFICATIONS_TABLE: props.notifications.tableName,
+        DDB_ADMINS_TABLE: props.admins.tableName,
+        DDB_ADMIN_ACTIVITY_LOGS_TABLE: props.adminActivityLogs.tableName,
+        DDB_USER_NO_SHOW_RECORDS_TABLE: props.userNoShowRecords.tableName,
+        DDB_SYSTEM_SETTINGS_TABLE: props.systemSettings.tableName,
+        
         AWS_REGION: process.env.CDK_DEFAULT_REGION ?? 'us-east-1',
         IS_LOCAL: 'false',
+        S3_IMAGE_BUCKET: props.imageBucket.bucketName,
         DJANGO_SETTINGS_MODULE: 'ecs_project.settings'
       },
       logging: LogDriver.awsLogs({

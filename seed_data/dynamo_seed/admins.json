@@ -1,0 +1,20 @@
+[
+  {
+    "adminId": "88888888-8888-8888-8888-888888888888",
+    "email": "owner@latrattoria.com",
+    "firstName": "Giovanni",
+    "lastName": "Rossi"
+  },
+  {
+    "adminId": "99999999-9999-9999-9999-999999999999",
+    "email": "manager@sakurasushi.com",
+    "firstName": "Aiko",
+    "lastName": "Tanaka"
+  },
+  {
+    "adminId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "email": "admin@thegreenfork.com",
+    "firstName": "Sarah",
+    "lastName": "Miller"
+  }
+]

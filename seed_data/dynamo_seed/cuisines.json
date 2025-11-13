@@ -1,0 +1,17 @@
+[
+  {
+    "cuisineId": "44444444-4444-4444-4444-444444444444",
+    "slug": "italian",
+    "name": "Italian"
+  },
+  {
+    "cuisineId": "55555555-5555-5555-5555-555555555555",
+    "slug": "japanese",
+    "name": "Japanese"
+  },
+  {
+    "cuisineId": "66666666-6666-6666-6666-666666666666",
+    "slug": "vegan",
+    "name": "Vegan"
+  }
+]
