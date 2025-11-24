@@ -57,6 +57,8 @@ export class MainStack extends Stack {
       adminActivityLogs: ddb.adminActivityLogs,
       userNoShowRecords: ddb.userNoShowRecords,
       systemSettings: ddb.systemSettings,
+      userStats: ddb.userStats,
+      holds: ddb.holds,
       imageBucket: s3.imageBucket,
       projectPrefix,
     });

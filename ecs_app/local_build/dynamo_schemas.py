@@ -711,6 +711,28 @@ SYSTEM_SETTINGS_TABLE_SCHEMA = {
     "BillingMode": "PAY_PER_REQUEST",
 }
 
+USER_STATS_TABLE_SCHEMA = {
+    "TableName": DynamoTables.USER_STATS.value,
+    "KeySchema": [
+        {"AttributeName": "userId", "KeyType": "HASH"},
+    ],
+    "AttributeDefinitions": [
+        {"AttributeName": "userId", "AttributeType": "S"},
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+}
+
+HOLDS_TABLE_SCHEMA = {
+    "TableName": DynamoTables.HOLDS.value,
+    "KeySchema": [
+        {"AttributeName": "holdId", "KeyType": "HASH"},
+    ],
+    "AttributeDefinitions": [
+        {"AttributeName": "holdId", "AttributeType": "S"},
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+}
+
 # ==========================================================
 # AGGREGATED TABLE SCHEMAS
 # ==========================================================
@@ -748,5 +770,7 @@ TABLE_SCHEMAS = {
     DynamoTables.ADMIN_ACTIVITY_LOGS.value: ADMIN_ACTIVITY_LOGS_TABLE_SCHEMA,
     DynamoTables.USER_NO_SHOW_RECORDS.value: USER_NO_SHOW_RECORDS_TABLE_SCHEMA,
     DynamoTables.SYSTEM_SETTINGS.value: SYSTEM_SETTINGS_TABLE_SCHEMA,
+    DynamoTables.USER_STATS.value: USER_STATS_TABLE_SCHEMA,
+    DynamoTables.HOLDS.value: HOLDS_TABLE_SCHEMA,
 
 }

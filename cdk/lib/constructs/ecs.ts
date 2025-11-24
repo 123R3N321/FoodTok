@@ -39,7 +39,9 @@ interface ECSProps {
   admins: Table;
   adminActivityLogs: Table;
   userNoShowRecords: Table;
-  systemSettings: Table;  
+  systemSettings: Table;
+  userStats: Table;
+  holds: Table;  
   imageBucket: Bucket;
   projectPrefix: string;
 }
@@ -104,6 +106,8 @@ export class ECSConstruct extends Construct {
         DDB_ADMIN_ACTIVITY_LOGS_TABLE: props.adminActivityLogs.tableName,
         DDB_USER_NO_SHOW_RECORDS_TABLE: props.userNoShowRecords.tableName,
         DDB_SYSTEM_SETTINGS_TABLE: props.systemSettings.tableName,
+        DDB_USER_STATS_TABLE:  props.userStats.tableName,
+        DDB_HOLDS_TABLE: props.holds.tableName,
         
         AWS_REGION: process.env.CDK_DEFAULT_REGION ?? 'us-east-1',
         IS_LOCAL: 'false',
@@ -145,6 +149,39 @@ export class ECSConstruct extends Construct {
     // Grant ECS Task IAM permissions
     props.users.grantReadWriteData(taskDef.taskRole);
     props.restaurants.grantReadWriteData(taskDef.taskRole);
+    props.reservations.grantReadWriteData(taskDef.taskRole);
+    props.userPreferences.grantReadWriteData(taskDef.taskRole);
+    props.userFavoriteCuisines.grantReadWriteData(taskDef.taskRole);
+    props.chainStores.grantReadWriteData(taskDef.taskRole);
+    props.restaurantHours.grantReadWriteData(taskDef.taskRole);
+    props.restaurantSpecialHours.grantReadWriteData(taskDef.taskRole);
+    props.cuisines.grantReadWriteData(taskDef.taskRole);
+    props.restaurantCuisines.grantReadWriteData(taskDef.taskRole);
+    props.amenities.grantReadWriteData(taskDef.taskRole);
+    props.restaurantAmenities.grantReadWriteData(taskDef.taskRole);
+    props.restaurantImages.grantReadWriteData(taskDef.taskRole);
+    props.diningTables.grantReadWriteData(taskDef.taskRole);
+    props.tableAvailability.grantReadWriteData(taskDef.taskRole);
+    props.tableAvailabilityOverrides.grantReadWriteData(taskDef.taskRole);
+    props.tableAvailabilitySnapshots.grantReadWriteData(taskDef.taskRole);
+    props.reservationTables.grantReadWriteData(taskDef.taskRole);
+    props.reservationHistory.grantReadWriteData(taskDef.taskRole);
+    props.waitlistEntries.grantReadWriteData(taskDef.taskRole);
+    props.reviews.grantReadWriteData(taskDef.taskRole);
+    props.reviewImages.grantReadWriteData(taskDef.taskRole);
+    props.reviewResponses.grantReadWriteData(taskDef.taskRole);
+    props.reviewHelpfulVotes.grantReadWriteData(taskDef.taskRole);
+    props.favorites.grantReadWriteData(taskDef.taskRole);
+    props.recommendationScores.grantReadWriteData(taskDef.taskRole);
+    props.userInteractions.grantReadWriteData(taskDef.taskRole);
+    props.notifications.grantReadWriteData(taskDef.taskRole);
+    props.admins.grantReadWriteData(taskDef.taskRole);
+    props.adminActivityLogs.grantReadWriteData(taskDef.taskRole);
+    props.userNoShowRecords.grantReadWriteData(taskDef.taskRole);
+    props.systemSettings.grantReadWriteData(taskDef.taskRole);
+    props.userStats.grantReadWriteData(taskDef.taskRole);
+    props.holds.grantReadWriteData(taskDef.taskRole);
+    
     props.imageBucket.grantReadWrite(taskDef.taskRole);
 
     this.loadBalancerDns = lb.loadBalancerDnsName;

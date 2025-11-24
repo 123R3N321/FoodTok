@@ -38,6 +38,8 @@ class DynamoTables(Enum):
     ADMIN_ACTIVITY_LOGS = "AdminActivityLogs"
     USER_NO_SHOW_RECORDS = "UserNoShowRecords"
     SYSTEM_SETTINGS = "SystemSettings"
+    USER_STATS = "UserStats"
+    HOLDS = "Holds"
 
 # ==========================================================
 # TABLE DATA CLASSES

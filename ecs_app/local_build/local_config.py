@@ -133,6 +133,8 @@ def main():
     table_admin_activity_logs = os.getenv("DDB_ADMIN_ACTIVITY_LOGS_TABLE", "AdminActivityLogs")
     table_user_no_show_records = os.getenv("DDB_USER_NO_SHOW_RECORDS_TABLE", "UserNoShowRecords")
     table_system_settings = os.getenv("DDB_SYSTEM_SETTINGS_TABLE", "SystemSettings")
+    table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+    table_holds = os.getenv("DDB_HOLDS_TABLE", "Holds")
 
     # Get S3 Bucket names
     bucket_images = os.getenv("S3_IMAGES_BUCKET", "foodtok-local-images")
@@ -169,7 +171,9 @@ def main():
         table_admins,
         table_admin_activity_logs,
         table_user_no_show_records,
-        table_system_settings,     
+        table_system_settings,
+        table_user_stats,
+        table_holds,     
     ]
 
     # Create DDB tables and S3 Buckets

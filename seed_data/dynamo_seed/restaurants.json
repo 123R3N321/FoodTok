@@ -1,50 +1,22 @@
 [
   {
     "restaurantId": "22222222-2222-2222-2222-222222222222",
-    "chainId": null,
-    "name": "La Trattoria",
-    "description": "Authentic Italian dining with fresh pasta and wood-fired pizza.",
-    "slug": "la-trattoria-nyc",
-    "addressLine1": "123 Mulberry St",
-    "addressLine2": null,
-    "city": "New York",
-    "state": "NY",
-    "zipCode": "10013",
-    "isActive": "true",
-    "acceptsReservations": "true",
-    "phone": "+1-212-555-0199",
-    "createdAt": "2025-01-02T10:00:00Z"
-  },
-  {
-    "restaurantId": "33333333-3333-3333-3333-333333333333",
-    "chainId": null,
-    "name": "Sakura Sushi",
-    "description": "Modern Japanese sushi bar offering omakase and traditional rolls.",
-    "slug": "sakura-sushi-brooklyn",
-    "addressLine1": "82 Riverside Ave",
-    "addressLine2": "Suite A",
-    "city": "Brooklyn",
-    "state": "NY",
-    "zipCode": "11201",
-    "isActive": "true",
-    "acceptsReservations": "false",
-    "phone": "+1-718-555-0147",
-    "createdAt": "2025-01-03T12:15:00Z"
-  },
-  {
-    "restaurantId": "44444444-4444-4444-4444-444444444444",
-    "chainId": null,
-    "name": "The Green Fork",
-    "description": "Farm-to-table seasonal American cuisine with vegan options.",
-    "slug": "the-green-fork",
-    "addressLine1": "510 Oak Street",
-    "addressLine2": null,
-    "city": "Hoboken",
-    "state": "NJ",
-    "zipCode": "07030",
-    "isActive": "false",
-    "acceptsReservations": "true",
-    "phone": "+1-201-555-0173",
-    "createdAt": "2025-01-04T09:45:00Z"
+    "name": "Sushi Zen",
+    "description": "Authentic Japanese sushi restaurant",
+    "cuisine": ["Japanese", "Sushi"],
+    "rating": 4.8,
+    "reviewCount": 132,
+    "priceRange": "$$",
+    "images": ["sushi1.jpg", "sushi2.jpg"],
+    "location": {
+      "address": "123 Sushi St",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "latitude": 40.7501,
+      "longitude": -73.9972
+    },
+    "deliveryTime": "25-40 min",
+    "deliveryFee": 2.99
   }
 ]

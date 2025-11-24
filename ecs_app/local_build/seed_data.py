@@ -125,6 +125,8 @@ def main():
     table_admin_activity_logs = os.getenv("DDB_ADMIN_ACTIVITY_LOGS_TABLE", "AdminActivityLogs")
     table_user_no_show_records = os.getenv("DDB_USER_NO_SHOW_RECORDS_TABLE", "UserNoShowRecords")
     table_system_settings = os.getenv("DDB_SYSTEM_SETTINGS_TABLE", "SystemSettings")
+    table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+    table_holds = os.getenv("DDB_HOLDS_TABLE", "Holds")
     
     # Get S3 Bucket names
     bucket_images = os.getenv("S3_IMAGES_BUCKET", "foodtok-local-images")
@@ -163,6 +165,8 @@ def main():
     admin_activity_logs_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "admin_activity_logs.json")
     user_no_show_records_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_no_show_records.json")
     system_settings_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "system_settings.json")
+    user_stats_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_stats.json")
+    holds_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "holds.json")
 
     # Get S3 Bucket paths
     s3_seed_file_dir = os.path.join("/app/seed_data", "s3_seed")
@@ -227,6 +231,8 @@ def main():
         table_admin_activity_logs,
         table_user_no_show_records,
         table_system_settings,
+        table_user_stats,
+        table_holds,
     ]
 
     path_names = [
@@ -262,6 +268,8 @@ def main():
         admin_activity_logs_seed_file_path,
         user_no_show_records_seed_file_path,
         system_settings_seed_file_path,
+        user_stats_seed_file_path,
+        holds_seed_file_path,
     ]
 
     for table_name, path_name in zip(table_names, path_names):

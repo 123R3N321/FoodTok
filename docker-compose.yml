@@ -90,6 +90,8 @@ services:
       - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
       - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
       - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_USER_STATS_TABLE=UserStats
+      - DDB_HOLDS_TABLE=Holds
       - S3_IMAGES_BUCKET=foodtok-local-images
       - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
       - LOCAL_S3_ENDPOINT=http://localstack:4566
@@ -152,6 +154,8 @@ services:
       - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
       - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
       - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_USER_STATS_TABLE=UserStats
+      - DDB_HOLDS_TABLE=Holds
       - S3_IMAGES_BUCKET=foodtok-local-images
       - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
       - LOCAL_S3_ENDPOINT=http://localstack:4566
@@ -200,6 +204,8 @@ services:
       - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
       - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
       - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_USER_STATS_TABLE=UserStats
+      - DDB_HOLDS_TABLE=Holds
       - S3_IMAGES_BUCKET=foodtok-local-images
       - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
       - LOCAL_S3_ENDPOINT=http://localstack:4566

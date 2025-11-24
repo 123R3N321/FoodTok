@@ -39,6 +39,8 @@ export class DdbConstruct extends Construct {
   public readonly adminActivityLogs: Table;
   public readonly userNoShowRecords: Table;
   public readonly systemSettings: Table;
+  public readonly userStats: Table;
+  public readonly holds: Table;
 
   constructor(scope: Construct, id: string, props: DdbProps) {
     super(scope, id);
@@ -576,6 +578,20 @@ export class DdbConstruct extends Construct {
     this.systemSettings = new Table(this, `${props.projectPrefix}-SystemSettings`, {
       tableName: `${props.projectPrefix}-SystemSettings`,
       partitionKey: { name: "settingKey", type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    this.userStats = new Table(this, `${props.projectPrefix}-UserStats`, {
+      tableName: `${props.projectPrefix}-UserStats`,
+      partitionKey: { name: "userId", type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    this.holds = new Table(this, `${props.projectPrefix}-Holds`, {
+      tableName: `${props.projectPrefix}-Holds`,
+      partitionKey: { name: "holdId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });

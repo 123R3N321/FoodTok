@@ -19,6 +19,8 @@ def get_dynamodb():
             region_name=AWS_REGION,
             endpoint_url=DYNAMODB_ENDPOINT,
             config=anon,
+            aws_access_key_id="fake",
+            aws_secret_access_key="fake",
         )
 
     return boto3.resource("dynamodb", region_name=AWS_REGION)
