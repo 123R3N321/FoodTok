@@ -1,0 +1,29 @@
+[
+  {
+    "reviewId": "77777777-1111-2222-3333-444444444444",
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "userId": "11111111-1111-1111-1111-111111111111",
+    "reservationId": "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+    "rating": 5,
+    "comment": "Amazing experience! The pasta was fresh and the service was perfect.",
+    "createdAt": "2025-02-02T10:15:00Z"
+  },
+  {
+    "reviewId": "88888888-1111-2222-3333-555555555555",
+    "restaurantId": "33333333-3333-3333-3333-333333333333",
+    "userId": "22222222-2222-2222-2222-222222222222",
+    "reservationId": "bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
+    "rating": 4,
+    "comment": "Sushi was excellent, although the wait was a bit long.",
+    "createdAt": "2025-02-04T14:20:00Z"
+  },
+  {
+    "reviewId": "99999999-1111-2222-3333-666666666666",
+    "restaurantId": "44444444-4444-4444-4444-444444444444",
+    "userId": "33333333-3333-3333-3333-333333333333",
+    "reservationId": "ccccccc3-cccc-cccc-cccc-ccccccccccc3",
+    "rating": 3,
+    "comment": "Good food but the service was slow and tables were cramped.",
+    "createdAt": "2025-02-06T18:40:00Z"
+  }
+]

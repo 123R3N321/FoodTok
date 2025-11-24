@@ -58,11 +58,43 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_REGION=us-east-1
-      - SEED_DDB_USERS=Users
-      - SEED_DDB_RESTAURANTS=Restaurants
-      - IMAGE_BUCKET=foodtok-local-images
-      - DYNAMODB_ENDPOINT=http://dynamo:8000
-      - S3_ENDPOINT=http://localstack:4566
+      - DDB_USERS_TABLE=Users
+      - DDB_RESTAURANTS_TABLE=Restaurants
+      - DDB_RESERVATIONS_TABLE=Reservations
+      - DDB_USER_PREFERENCES_TABLE=UserPreferences
+      - DDB_USER_FAVORITE_CUISINES_TABLE=UserFavoriteCuisines
+      - DDB_CHAINSTORES_TABLE=ChainStores
+      - DDB_RESTAURANT_HOURS_TABLE=RestaurantHours
+      - DDB_RESTAURANT_SPECIAL_HOURS_TABLE=RestaurantSpecialHours
+      - DDB_CUISINES_TABLE=Cuisines
+      - DDB_RESTAURANT_CUISINES_TABLE=RestaurantCuisines
+      - DDB_AMENITIES_TABLE=Amenities
+      - DDB_RESTAURANT_AMENITIES_TABLE=RestaurantAmenities
+      - DDB_RESTAURANT_IMAGES_TABLE=RestaurantImages
+      - DDB_DINING_TABLES_TABLE=DiningTables
+      - DDB_TABLE_AVAILABILITY_TABLE=TableAvailability
+      - DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE=TableAvailabilityOverrides
+      - DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE=TableAvailabilitySnapshots
+      - DDB_RESERVATION_TABLES_TABLE=ReservationTables
+      - DDB_RESERVATION_HISTORY_TABLE=ReservationHistory
+      - DDB_WAITLIST_ENTRIES_TABLE=WaitlistEntries
+      - DDB_REVIEWS_TABLE=Reviews
+      - DDB_REVIEW_IMAGES_TABLE=ReviewImages
+      - DDB_REVIEW_RESPONSES_TABLE=ReviewResponses
+      - DDB_REVIEW_HELPFUL_VOTES_TABLE=ReviewHelpfulVotes
+      - DDB_FAVORITES_TABLE=Favorites
+      - DDB_RECOMMENDATION_SCORES_TABLE=RecommendationScores
+      - DDB_USER_INTERACTIONS_TABLE=UserInteractions
+      - DDB_NOTIFICATIONS_TABLE=Notifications
+      - DDB_ADMINS_TABLE=Admins
+      - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
+      - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
+      - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_USER_STATS_TABLE=UserStats
+      - DDB_HOLDS_TABLE=Holds
+      - S3_IMAGES_BUCKET=foodtok-local-images
+      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
+      - LOCAL_S3_ENDPOINT=http://localstack:4566
       - DJANGO_SETTINGS_MODULE=ecs_project.settings
     ports:
       - "8080:8080"       
@@ -87,11 +119,47 @@ services:
         condition: service_healthy
     environment:
       - IS_LOCAL=true
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - AWS_REGION=us-east-1
-      - SEED_DDB_USERS=Users
-      - SEED_DDB_RESTAURANTS=Restaurants
+      - DDB_USERS_TABLE=Users
+      - DDB_RESTAURANTS_TABLE=Restaurants
+      - DDB_RESERVATIONS_TABLE=Reservations
+      - DDB_USER_PREFERENCES_TABLE=UserPreferences
+      - DDB_USER_FAVORITE_CUISINES_TABLE=UserFavoriteCuisines
+      - DDB_CHAINSTORES_TABLE=ChainStores
+      - DDB_RESTAURANT_HOURS_TABLE=RestaurantHours
+      - DDB_RESTAURANT_SPECIAL_HOURS_TABLE=RestaurantSpecialHours
+      - DDB_CUISINES_TABLE=Cuisines
+      - DDB_RESTAURANT_CUISINES_TABLE=RestaurantCuisines
+      - DDB_AMENITIES_TABLE=Amenities
+      - DDB_RESTAURANT_AMENITIES_TABLE=RestaurantAmenities
+      - DDB_RESTAURANT_IMAGES_TABLE=RestaurantImages
+      - DDB_DINING_TABLES_TABLE=DiningTables
+      - DDB_TABLE_AVAILABILITY_TABLE=TableAvailability
+      - DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE=TableAvailabilityOverrides
+      - DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE=TableAvailabilitySnapshots
+      - DDB_RESERVATION_TABLES_TABLE=ReservationTables
+      - DDB_RESERVATION_HISTORY_TABLE=ReservationHistory
+      - DDB_WAITLIST_ENTRIES_TABLE=WaitlistEntries
+      - DDB_REVIEWS_TABLE=Reviews
+      - DDB_REVIEW_IMAGES_TABLE=ReviewImages
+      - DDB_REVIEW_RESPONSES_TABLE=ReviewResponses
+      - DDB_REVIEW_HELPFUL_VOTES_TABLE=ReviewHelpfulVotes
+      - DDB_FAVORITES_TABLE=Favorites
+      - DDB_RECOMMENDATION_SCORES_TABLE=RecommendationScores
+      - DDB_USER_INTERACTIONS_TABLE=UserInteractions
+      - DDB_NOTIFICATIONS_TABLE=Notifications
+      - DDB_ADMINS_TABLE=Admins
+      - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
+      - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
+      - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_USER_STATS_TABLE=UserStats
+      - DDB_HOLDS_TABLE=Holds
+      - S3_IMAGES_BUCKET=foodtok-local-images
       - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
       - LOCAL_S3_ENDPOINT=http://localstack:4566
+      - DJANGO_SETTINGS_MODULE=ecs_project.settings
     command: ["python", "/app/local_build/local_config.py"]
     networks:
       - localstack-net
@@ -104,9 +172,41 @@ services:
     environment:
       - IS_LOCAL=true
       - AWS_REGION=us-east-1
-      - SEED_DDB_USERS=Users
-      - SEED_DDB_RESTAURANTS=Restaurants
-      - SEED_S3_BUCKET=foodtok-local-images
+      - DDB_USERS_TABLE=Users
+      - DDB_RESTAURANTS_TABLE=Restaurants
+      - DDB_RESERVATIONS_TABLE=Reservations
+      - DDB_USER_PREFERENCES_TABLE=UserPreferences
+      - DDB_USER_FAVORITE_CUISINES_TABLE=UserFavoriteCuisines
+      - DDB_CHAINSTORES_TABLE=ChainStores
+      - DDB_RESTAURANT_HOURS_TABLE=RestaurantHours
+      - DDB_RESTAURANT_SPECIAL_HOURS_TABLE=RestaurantSpecialHours
+      - DDB_CUISINES_TABLE=Cuisines
+      - DDB_RESTAURANT_CUISINES_TABLE=RestaurantCuisines
+      - DDB_AMENITIES_TABLE=Amenities
+      - DDB_RESTAURANT_AMENITIES_TABLE=RestaurantAmenities
+      - DDB_RESTAURANT_IMAGES_TABLE=RestaurantImages
+      - DDB_DINING_TABLES_TABLE=DiningTables
+      - DDB_TABLE_AVAILABILITY_TABLE=TableAvailability
+      - DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE=TableAvailabilityOverrides
+      - DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE=TableAvailabilitySnapshots
+      - DDB_RESERVATION_TABLES_TABLE=ReservationTables
+      - DDB_RESERVATION_HISTORY_TABLE=ReservationHistory
+      - DDB_WAITLIST_ENTRIES_TABLE=WaitlistEntries
+      - DDB_REVIEWS_TABLE=Reviews
+      - DDB_REVIEW_IMAGES_TABLE=ReviewImages
+      - DDB_REVIEW_RESPONSES_TABLE=ReviewResponses
+      - DDB_REVIEW_HELPFUL_VOTES_TABLE=ReviewHelpfulVotes
+      - DDB_FAVORITES_TABLE=Favorites
+      - DDB_RECOMMENDATION_SCORES_TABLE=RecommendationScores
+      - DDB_USER_INTERACTIONS_TABLE=UserInteractions
+      - DDB_NOTIFICATIONS_TABLE=Notifications
+      - DDB_ADMINS_TABLE=Admins
+      - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
+      - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
+      - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_USER_STATS_TABLE=UserStats
+      - DDB_HOLDS_TABLE=Holds
+      - S3_IMAGES_BUCKET=foodtok-local-images
       - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
       - LOCAL_S3_ENDPOINT=http://localstack:4566
     volumes:
@@ -124,4 +224,5 @@ services:
 
 networks:
   localstack-net:
+    name: localstack-net
     driver: bridge

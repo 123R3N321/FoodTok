@@ -1,0 +1,20 @@
+[
+  {
+    "imageId": "99999999-9999-9999-9999-999999999999",
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "url": "https://example.com/images/la_trattoria_front.jpg",
+    "description": "Front entrance of La Trattoria"
+  },
+  {
+    "imageId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "restaurantId": "33333333-3333-3333-3333-333333333333",
+    "url": "https://example.com/images/sakura_sushi_bar.jpg",
+    "description": "Sakura Sushi bar interior"
+  },
+  {
+    "imageId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+    "restaurantId": "44444444-4444-4444-4444-444444444444",
+    "url": "https://example.com/images/green_fork_dining_room.jpg",
+    "description": "Dining room at The Green Fork"
+  }
+]

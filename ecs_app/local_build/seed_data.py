@@ -13,7 +13,7 @@ def marshal(obj):
     elif isinstance(obj, dict):
         return {k: marshal(v) for k, v in obj.items()}
     elif isinstance(obj, float):
-        return Decimal(str(obj))   # Convert float -> Decimal safely
+        return Decimal(str(obj))   
     else:
         return obj
     
@@ -87,20 +87,91 @@ def seed_s3_bucket(s3_client, bucket_name: str, seed_dir_path: str):
 def main():
     print("Starting data seeding...")
 
-    # Can be moved to DC.yml file
+    # TODO: Extend for production if needed
+    # Currently only for local environment
     is_local = os.getenv("IS_LOCAL", "true").lower() == "true"
     region = os.getenv("AWS_REGION", "us-east-1")
 
-    # Add DDB tables and S3 Buckets here
-    users = os.getenv("SEED_DDB_USERS", "Users")
-    restaurants = os.getenv("SEED_DDB_RESTAURANTS", "Restaurants")
-    bucket_name = os.getenv("SEED_S3_BUCKET", "foodtok-local-images")
+    # Get DDB tables names
+    table_users = os.getenv("DDB_USERS_TABLE", "Users")
+    table_restaurants = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
+    table_reservations = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
+    table_user_preferences = os.getenv("DDB_USER_PREFERENCES_TABLE", "UserPreferences")
+    table_user_favorite_cuisines = os.getenv("DDB_USER_FAVORITE_CUISINES_TABLE", "UserFavoriteCuisines")
+    table_chainstores = os.getenv("DDB_CHAINSTORES_TABLE", "ChainStores")
+    table_restaurant_hours = os.getenv("DDB_RESTAURANT_HOURS_TABLE", "RestaurantHours")
+    table_restaurant_special_hours = os.getenv("DDB_RESTAURANT_SPECIAL_HOURS_TABLE", "RestaurantSpecialHours")
+    table_cuisines = os.getenv("DDB_CUISINES_TABLE", "Cuisines")
+    table_restaurant_cuisines = os.getenv("DDB_RESTAURANT_CUISINES_TABLE", "RestaurantCuisines")
+    table_amenities = os.getenv("DDB_AMENITIES_TABLE", "Amenities")
+    table_restaurant_amenities = os.getenv("DDB_RESTAURANT_AMENITIES_TABLE", "RestaurantAmenities")
+    table_restaurant_images = os.getenv("DDB_RESTAURANT_IMAGES_TABLE", "RestaurantImages")
+    table_dining_tables = os.getenv("DDB_DINING_TABLES_TABLE", "DiningTables")
+    table_table_availability = os.getenv("DDB_TABLE_AVAILABILITY_TABLE", "TableAvailability")
+    table_table_availability_overrides = os.getenv("DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE", "TableAvailabilityOverrides")
+    table_table_availability_snapshots = os.getenv("DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE", "TableAvailabilitySnapshots")
+    table_reservation_tables = os.getenv("DDB_RESERVATION_TABLES_TABLE", "ReservationTables")
+    table_reservation_history = os.getenv("DDB_RESERVATION_HISTORY_TABLE", "ReservationHistory")
+    table_waitlist_entries = os.getenv("DDB_WAITLIST_ENTRIES_TABLE", "WaitlistEntries")
+    table_reviews = os.getenv("DDB_REVIEWS_TABLE", "Reviews")
+    table_review_images = os.getenv("DDB_REVIEW_IMAGES_TABLE", "ReviewImages")
+    table_review_responses = os.getenv("DDB_REVIEW_RESPONSES_TABLE", "ReviewResponses")
+    table_review_helpful_votes = os.getenv("DDB_REVIEW_HELPFUL_VOTES_TABLE", "ReviewHelpfulVotes")
+    table_favorites = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
+    table_recommendation_scores = os.getenv("DDB_RECOMMENDATION_SCORES_TABLE", "RecommendationScores")
+    table_user_interactions = os.getenv("DDB_USER_INTERACTIONS_TABLE", "UserInteractions")
+    table_notifications = os.getenv("DDB_NOTIFICATIONS_TABLE", "Notifications")
+    table_admins = os.getenv("DDB_ADMINS_TABLE", "Admins")
+    table_admin_activity_logs = os.getenv("DDB_ADMIN_ACTIVITY_LOGS_TABLE", "AdminActivityLogs")
+    table_user_no_show_records = os.getenv("DDB_USER_NO_SHOW_RECORDS_TABLE", "UserNoShowRecords")
+    table_system_settings = os.getenv("DDB_SYSTEM_SETTINGS_TABLE", "SystemSettings")
+    table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+    table_holds = os.getenv("DDB_HOLDS_TABLE", "Holds")
+    
+    # Get S3 Bucket names
+    bucket_images = os.getenv("S3_IMAGES_BUCKET", "foodtok-local-images")
+
 
     # Add DDB tables and S3 Buckets seeding paths
     users_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "users.json")
     restaurants_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurants.json")
-    s3_seed_dir = os.path.join("/app/seed_data", "s3_seed")
+    reservations_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "reservations.json")
+    user_preferences_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_preferences.json")
+    user_favorite_cuisines_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_favorite_cuisine.json")
+    chainstores_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "chainstores.json")
+    restaurant_hours_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurant_hours.json")
+    restaurant_special_hours_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurant_special_hours.json")
+    cuisines_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "cuisines.json")
+    restaurant_cuisines_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurant_cuisines.json")
+    amenities_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "amenities.json")
+    restaurant_amenities_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurant_amenities.json")
+    restaurant_images_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "restaurant_images.json")
+    dining_tables_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "dining_tables.json")
+    table_availability_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "table_availability.json")
+    table_availability_overrides_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "table_availability_overrides.json")
+    table_availability_snapshots_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "table_availability_snapshots.json")
+    reservation_tables_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "reservation_tables.json")
+    reservation_history_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "reservation_history.json")
+    waitlist_entries_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "waitlist_entries.json")
+    reviews_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "reviews.json")
+    review_images_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "review_images.json")
+    review_responses_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "review_responses.json")
+    review_helpful_votes_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "review_helpful_votes.json")
+    favorites_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "favorites.json")
+    recommendation_scores_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "recommendation_scores.json")
+    user_interactions_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_interactions.json")
+    notifications_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "notifications.json")
+    admins_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "admins.json")
+    admin_activity_logs_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "admin_activity_logs.json")
+    user_no_show_records_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_no_show_records.json")
+    system_settings_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "system_settings.json")
+    user_stats_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "user_stats.json")
+    holds_seed_file_path = os.path.join("/app/seed_data/dynamo_seed", "holds.json")
 
+    # Get S3 Bucket paths
+    s3_seed_file_dir = os.path.join("/app/seed_data", "s3_seed")
+
+    # Get local/production DDB and S3 endpoints
     if is_local:
         dynamo_endpoint = os.getenv("LOCAL_DYNAMO_ENDPOINT", "http://localhost:8000")
         s3_endpoint = os.getenv("LOCAL_S3_ENDPOINT", "http://localhost:4566")
@@ -110,6 +181,7 @@ def main():
         s3_endpoint = None
         print("Using AWS production endpoints")
 
+    # Initialize ddb client and s3 client
     dynamodb = boto3.resource(
         "dynamodb",
         region_name=region,
@@ -126,10 +198,121 @@ def main():
         aws_secret_access_key="test" if is_local else None,
     )
 
-    # Seed DDB tables and S3 Buckets here
-    seed_dynamodb_table(dynamodb, users, users_seed_file_path)
-    seed_dynamodb_table(dynamodb, restaurants, restaurants_seed_file_path)
-    seed_s3_bucket(s3, bucket_name, s3_seed_dir)
+    table_names = [
+        table_users,
+        table_restaurants,
+        table_reservations,
+        table_user_preferences,
+        table_user_favorite_cuisines,
+        table_chainstores,
+        table_restaurant_hours,
+        table_restaurant_special_hours,
+        table_cuisines,
+        table_restaurant_cuisines,
+        table_amenities,
+        table_restaurant_amenities,
+        table_restaurant_images,
+        table_dining_tables,
+        table_table_availability,
+        table_table_availability_overrides,
+        table_table_availability_snapshots,
+        table_reservation_tables,
+        table_reservation_history,
+        table_waitlist_entries,
+        table_reviews,
+        table_review_images,
+        table_review_responses,
+        table_review_helpful_votes,
+        table_favorites,
+        table_recommendation_scores,
+        table_user_interactions,
+        table_notifications,
+        table_admins,
+        table_admin_activity_logs,
+        table_user_no_show_records,
+        table_system_settings,
+        table_user_stats,
+        table_holds,
+    ]
+
+    path_names = [
+        users_seed_file_path,
+        restaurants_seed_file_path,
+        reservations_seed_file_path,
+        user_preferences_seed_file_path,
+        user_favorite_cuisines_seed_file_path,
+        chainstores_seed_file_path,
+        restaurant_hours_seed_file_path,
+        restaurant_special_hours_seed_file_path,
+        cuisines_seed_file_path,
+        restaurant_cuisines_seed_file_path,
+        amenities_seed_file_path,
+        restaurant_amenities_seed_file_path,
+        restaurant_images_seed_file_path,
+        dining_tables_seed_file_path,
+        table_availability_seed_file_path,
+        table_availability_overrides_seed_file_path,
+        table_availability_snapshots_seed_file_path,
+        reservation_tables_seed_file_path,
+        reservation_history_seed_file_path,
+        waitlist_entries_seed_file_path,
+        reviews_seed_file_path,
+        review_images_seed_file_path,
+        review_responses_seed_file_path,
+        review_helpful_votes_seed_file_path,
+        favorites_seed_file_path,
+        recommendation_scores_seed_file_path,
+        user_interactions_seed_file_path,
+        notifications_seed_file_path,
+        admins_seed_file_path,
+        admin_activity_logs_seed_file_path,
+        user_no_show_records_seed_file_path,
+        system_settings_seed_file_path,
+        user_stats_seed_file_path,
+        holds_seed_file_path,
+    ]
+
+    for table_name, path_name in zip(table_names, path_names):
+        print(f"Preparing to seed table '{table_name}' from '{path_name}'")
+        seed_dynamodb_table(dynamodb, table_name, path_name)
+
+    """
+    # Seed DDB tables and S3 Buckets
+    seed_dynamodb_table(dynamodb, table_users, users_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_restaurants, restaurants_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_reservations, reservations_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_user_preferences, user_preferences_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_user_favorite_cuisines, user_favorite_cuisines_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_chainstores, chainstores_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_restaurant_hours, restaurant_hours_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_restaurant_special_hours, restaurant_special_hours_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_cuisines, cuisines_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_restaurant_cuisines, restaurant_cuisines_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_amenities, amenities_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_restaurant_amenities, restaurant_amenities_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_restaurant_images, restaurant_images_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_dining_tables, dining_tables_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_table_availability, table_availability_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_table_availability_overrides, table_availability_overrides_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_table_availability_snapshots, table_availability_snapshots_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_reservation_tables, reservation_tables_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_reservation_history, reservation_history_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_waitlist_entries, waitlist_entries_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_reviews, reviews_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_review_images, review_images_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_review_responses, review_responses_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_review_helpful_votes, review_helpful_votes_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_favorites, favorites_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_recommendation_scores, recommendation_scores_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_user_interactions, user_interactions_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_notifications, notifications_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_admins, admins_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_admin_activity_logs, admin_activity_logs_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_user_no_show_records, user_no_show_records_seed_file_path)
+    seed_dynamodb_table(dynamodb, table_system_settings, system_settings_seed_file_path)
+    """
+
+    seed_s3_bucket(s3, bucket_images, s3_seed_file_dir)
 
     print("Seeding completed successfully!")
 

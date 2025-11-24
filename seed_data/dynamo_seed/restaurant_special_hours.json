@@ -1,0 +1,46 @@
+[
+  {
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "date": "2025-12-25",
+    "openTime": null,
+    "closeTime": null,
+    "isClosed": true
+  },
+  {
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "date": "2025-02-14",
+    "openTime": "11:00",
+    "closeTime": "23:30",
+    "isClosed": false
+  },
+
+  {
+    "restaurantId": "33333333-3333-3333-3333-333333333333",
+    "date": "2025-01-01",
+    "openTime": "14:00",
+    "closeTime": "21:00",
+    "isClosed": false
+  },
+  {
+    "restaurantId": "33333333-3333-3333-3333-333333333333",
+    "date": "2025-07-04",
+    "openTime": null,
+    "closeTime": null,
+    "isClosed": true
+  },
+
+  {
+    "restaurantId": "44444444-4444-4444-4444-444444444444",
+    "date": "2025-11-28",
+    "openTime": "12:00",
+    "closeTime": "18:00",
+    "isClosed": false
+  },
+  {
+    "restaurantId": "44444444-4444-4444-4444-444444444444",
+    "date": "2025-03-17",
+    "openTime": "09:00",
+    "closeTime": "22:00",
+    "isClosed": false
+  }
+]

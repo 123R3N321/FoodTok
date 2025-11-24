@@ -5,9 +5,8 @@ from botocore.session import get_session
 
 IS_LOCAL = os.getenv("IS_LOCAL", "false").lower() == "true"
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-
-DYNAMODB_ENDPOINT = os.getenv("DYNAMODB_ENDPOINT")
-S3_ENDPOINT = os.getenv("S3_ENDPOINT")
+DYNAMODB_ENDPOINT = os.getenv("LOCAL_DYNAMO_ENDPOINT")
+S3_ENDPOINT = os.getenv("LOCAL_S3_ENDPOINT")
 
 def get_dynamodb():
     if IS_LOCAL:
@@ -20,6 +19,8 @@ def get_dynamodb():
             region_name=AWS_REGION,
             endpoint_url=DYNAMODB_ENDPOINT,
             config=anon,
+            aws_access_key_id="fake",
+            aws_secret_access_key="fake",
         )
 
     return boto3.resource("dynamodb", region_name=AWS_REGION)

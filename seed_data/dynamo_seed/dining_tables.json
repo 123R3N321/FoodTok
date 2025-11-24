@@ -1,0 +1,38 @@
+[
+  {
+    "tableId": "66666666-6666-6666-6666-666666666666",
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "capacity": 2,
+    "tableNumber": "T1"
+  },
+  {
+    "tableId": "77777777-7777-7777-7777-777777777777",
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "capacity": 4,
+    "tableNumber": "T2"
+  },
+  {
+    "tableId": "88888888-8888-8888-8888-888888888888",
+    "restaurantId": "33333333-3333-3333-3333-333333333333",
+    "capacity": 2,
+    "tableNumber": "A1"
+  },
+  {
+    "tableId": "99999999-9999-9999-9999-999999999999",
+    "restaurantId": "33333333-3333-3333-3333-333333333333",
+    "capacity": 6,
+    "tableNumber": "A2"
+  },
+  {
+    "tableId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "restaurantId": "44444444-4444-4444-4444-444444444444",
+    "capacity": 4,
+    "tableNumber": "B1"
+  },
+  {
+    "tableId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+    "restaurantId": "44444444-4444-4444-4444-444444444444",
+    "capacity": 2,
+    "tableNumber": "B2"
+  }
+]

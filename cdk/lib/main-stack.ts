@@ -27,6 +27,38 @@ export class MainStack extends Stack {
     const ecs = new ECSConstruct(this, 'ECSConstruct', {
       users: ddb.users,
       restaurants: ddb.restaurants,
+      reservations: ddb.reservations,
+      userPreferences: ddb.userPreferences,
+      userFavoriteCuisines: ddb.userFavoriteCuisines,
+      chainStores: ddb.chainStores,
+      restaurantHours: ddb.restaurantHours,
+      restaurantSpecialHours: ddb.restaurantSpecialHours,
+      cuisines: ddb.cuisines,
+      restaurantCuisines: ddb.restaurantCuisines,
+      amenities: ddb.amenities,
+      restaurantAmenities: ddb.restaurantAmenities,
+      restaurantImages: ddb.restaurantImages,
+      diningTables: ddb.diningTables,
+      tableAvailability: ddb.tableAvailability,
+      tableAvailabilityOverrides: ddb.tableAvailabilityOverrides,
+      tableAvailabilitySnapshots: ddb.tableAvailabilitySnapshots,
+      reservationTables: ddb.reservationTables,
+      reservationHistory: ddb.reservationHistory,
+      waitlistEntries: ddb.waitlistEntries,
+      reviews: ddb.reviews,
+      reviewImages: ddb.reviewImages,
+      reviewResponses: ddb.reviewResponses,
+      reviewHelpfulVotes: ddb.reviewHelpfulVotes,
+      favorites: ddb.favorites,
+      recommendationScores: ddb.recommendationScores,
+      userInteractions: ddb.userInteractions,
+      notifications: ddb.notifications,
+      admins: ddb.admins,
+      adminActivityLogs: ddb.adminActivityLogs,
+      userNoShowRecords: ddb.userNoShowRecords,
+      systemSettings: ddb.systemSettings,
+      userStats: ddb.userStats,
+      holds: ddb.holds,
       imageBucket: s3.imageBucket,
       projectPrefix,
     });
@@ -82,21 +114,6 @@ export class MainStack extends Stack {
     new cdk.CfnOutput(this, 'WebsiteBucketURL', {
       value: s3.websiteBucket.bucketWebsiteUrl,
       description: 'S3 Website Bucket URL',
-    });
-
-    new cdk.CfnOutput(this, 'ImageBucketName', {
-      value: s3.imageBucket.bucketName,
-      description: 'S3 Image Bucket Name',
-    });
-
-    new cdk.CfnOutput(this, 'DDB_Users', {
-      value: ddb.users.tableName,
-      description: 'DynamoDB Users Table Name',
-    });
-
-    new cdk.CfnOutput(this, 'DDB_Restaurants', {
-      value: ddb.restaurants.tableName,
-      description: 'DynamoDB Restaurants Table Name',
     });
 
       //just for makefile use

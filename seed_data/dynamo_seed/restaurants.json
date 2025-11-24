@@ -1,6 +1,6 @@
 [
   {
-    "id": "rest1",
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
     "name": "Sushi Zen",
     "description": "Authentic Japanese sushi restaurant",
     "cuisine": ["Japanese", "Sushi"],

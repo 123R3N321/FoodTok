@@ -1,0 +1,23 @@
+[
+  {
+    "notificationId": "aaaa1111-bbbb-2222-cccc-333333333333",
+    "userId": "11111111-1111-1111-1111-111111111111",
+    "createdAt": "2025-02-01T14:00:00Z",
+    "message": "Your reservation at La Trattoria is confirmed for 7:00 PM.",
+    "isRead": "false"
+  },
+  {
+    "notificationId": "bbbb2222-cccc-3333-dddd-444444444444",
+    "userId": "22222222-2222-2222-2222-222222222222",
+    "createdAt": "2025-02-04T14:30:00Z",
+    "message": "Thanks for leaving a review for Sakura Sushi! Your feedback helps us improve.",
+    "isRead": "true"
+  },
+  {
+    "notificationId": "cccc3333-dddd-4444-eeee-555555555555",
+    "userId": "33333333-3333-3333-3333-333333333333",
+    "createdAt": "2025-02-11T18:50:00Z",
+    "message": "You have joined the waitlist for The Green Fork. We will notify you when a table is ready.",
+    "isRead": "false"
+  }
+]

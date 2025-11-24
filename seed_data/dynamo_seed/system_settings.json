@@ -1,0 +1,22 @@
+[
+  {
+    "settingKey": "reservation_cutoff_minutes",
+    "settingValue": "120"
+  },
+  {
+    "settingKey": "max_party_size",
+    "settingValue": "10"
+  },
+  {
+    "settingKey": "recommendation_algorithm_version",
+    "settingValue": "v1.3"
+  },
+  {
+    "settingKey": "default_timezone",
+    "settingValue": "America/New_York"
+  },
+  {
+    "settingKey": "notification_retry_interval_minutes",
+    "settingValue": "15"
+  }
+]

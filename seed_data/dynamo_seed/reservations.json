@@ -1,0 +1,23 @@
+[
+  {
+    "reservationId": "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+    "userId": "11111111-1111-1111-1111-111111111111",
+    "holdId": "ccccccc1-cccc-cccc-cccc-ccccccccccc1",
+    "restaurantId": "22222222-2222-2222-2222-222222222222",
+    "restaurantName": "Sushi Zen",
+    "restaurantImage": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624",
+    "date": "2025-01-25",
+    "time": "19:00",
+    "partySize": 4,
+    "status": "confirmed",
+    "confirmationCode": "234ABC",
+    "depositAmount": 100,
+    "paymentMethod": "card_visa_1234",
+    "specialRequests": "Window seat if available",
+    "cancellationReason": "",
+    "refundAmount": 0,
+    "createdAt": "2025-01-15T12:00:00Z",
+    "updatedAt": "2025-01-15T12:00:00Z",
+    "completedAt": ""
+  }
+]
