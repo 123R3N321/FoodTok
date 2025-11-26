@@ -66,7 +66,7 @@ test:
 smoke:
 	$(BACKEND_RUN) python3 -c "import importlib; importlib.import_module('ecs_project'); print('ecs_project import OK')"
 
-ci: build check smoke test
+ci: backend-build check smoke test
 
 # ---------------------------
 # AWS CDK Project Makefile
