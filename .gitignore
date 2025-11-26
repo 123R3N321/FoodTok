@@ -22,6 +22,29 @@ cdk/lambda/lambda.zip
 *.tmp
 *.bak
 
+# Frontend (Next.js)
+FoodTok_Frontend/node_modules
+FoodTok_Frontend/.pnp
+FoodTok_Frontend/.pnp.*
+FoodTok_Frontend/.yarn/*
+!FoodTok_Frontend/.yarn/patches
+!FoodTok_Frontend/.yarn/plugins
+!FoodTok_Frontend/.yarn/releases
+!FoodTok_Frontend/.yarn/versions
+FoodTok_Frontend/coverage
+FoodTok_Frontend/.next/
+FoodTok_Frontend/out/
+FoodTok_Frontend/build
+FoodTok_Frontend/*.pem
+FoodTok_Frontend/npm-debug.log*
+FoodTok_Frontend/yarn-debug.log*
+FoodTok_Frontend/yarn-error.log*
+FoodTok_Frontend/.pnpm-debug.log*
+FoodTok_Frontend/.env*
+FoodTok_Frontend/.vercel
+FoodTok_Frontend/*.tsbuildinfo
+FoodTok_Frontend/next-env.d.ts
+
 # IDE/editor metadata
 .vscode/
 .idea/

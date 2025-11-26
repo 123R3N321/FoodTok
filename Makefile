@@ -6,23 +6,67 @@ ifeq ($(USE_SUDO),1)
 DC := sudo docker compose
 endif
 
-APP = ecs-app
-DC_RUN = $(DC) run --rm --no-deps $(APP)
+FRONTEND_PROJECT := foodtok-frontend
+BACKEND_PROJECT := foodtok-backend
 
-build:
-	$(DC) build
+FRONTEND_FILE := docker-compose.frontend.yml
+BACKEND_FILE := docker-compose.backend.yml
+
+FRONTEND_DC := $(DC) -p $(FRONTEND_PROJECT) -f $(FRONTEND_FILE)
+BACKEND_DC := $(DC) -p $(BACKEND_PROJECT) -f $(BACKEND_FILE)
+
+BACKEND_APP = ecs-app
+BACKEND_RUN = $(BACKEND_DC) run --rm --no-deps $(BACKEND_APP)
+
+# ---------- Backend targets ----------
+
+backend-build:
+	$(BACKEND_DC) build --no-cache
+
+backend-up:
+	$(BACKEND_DC) up -d
+
+backend-down:
+	$(BACKEND_DC) down -v
+
+backend-ps:
+	$(BACKEND_DC) ps
+
+# ---------- Frontend targets ----------
+
+frontend-build:
+	$(FRONTEND_DC) build --no-cache
+
+frontend-up:
+	$(FRONTEND_DC) up -d
+
+frontend-down:
+	$(FRONTEND_DC) down -v
+
+frontend-ps:
+	$(FRONTEND_DC) ps
+
+# ---------- Combined targets ----------
+
+build-all: backend-build frontend-build
+
+up-all: backend-up frontend-up
+
+down-all: backend-down frontend-down
+
+ps-all: backend-ps frontend-ps
 
 # ---- CI helpers ----
 check:
-	$(DC_RUN) sh -c 'python manage.py check --verbosity 2'
+	$(BACKEND_RUN) sh -c 'python manage.py check --verbosity 2'
 
 test:
-	$(DC_RUN) python manage.py test --verbosity 2
+	$(BACKEND_RUN) python manage.py test --verbosity 2
 
 smoke:
-	$(DC_RUN) python3 -c "import importlib; importlib.import_module('ecs_project'); print('ecs_project import OK')"
+	$(BACKEND_RUN) python3 -c "import importlib; importlib.import_module('ecs_project'); print('ecs_project import OK')"
 
-ci: build check smoke test
+ci: backend-build check smoke test
 
 # ---------------------------
 # AWS CDK Project Makefile
