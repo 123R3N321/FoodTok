@@ -1,0 +1,17 @@
+services:
+  frontend:
+    build:
+      context: ./FoodTok_Frontend
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    environment:
+      - BACKEND_ENDPOINT=http://localhost:8080
+    ports:
+      - "3000:3000"
+    networks:
+      - localstack-net
+
+networks:
+  localstack-net:
+    name: localstack-net
+    driver: bridge

@@ -1,55 +1,52 @@
-# this is the DrEam tEam o' 6063 Fall 2025
-## our stars are: 
- - Yuxuan Wang
- - Ren
- - Pranjal Mishra
- - Matty Boubin
- - Aaron Bengochea
+# FoodTok
 
-## Ren's Arbitrary rules:
-- we do camel case not snake case
+FoodTok pairs a Next.js frontend with a Django backend to deliver food discovery and reservations. Docker Compose (orchestrated via the primary `Makefile`) runs the stack locally, while AWS CDK deploys all infrastructure programmatically.
 
-## Project Proposal
-[FoodTok Proposal](./FoodTok-FINAL.pdf)
+## Prerequisites
+- Docker (20+ recommended)
+- Docker Compose (bundled with recent Docker Desktop/CLI)
+- GNU Make
+- AWS CLI configured with credentials/region for cloud deploys
 
-# App Overview 🍴
+## Local Development
+The stack now uses separate Compose files for backend and frontend (`docker-compose.backend.yml` and `docker-compose.frontend.yml`). Targets are split accordingly in the `Makefile`.
 
-A skeletal Django-based food ordering application.  
-This project is containerized with Docker and managed via a Makefile for a consistent developer experience.
+**Backend (Django + LocalStack/DynamoDB)**
+- `make backend-build` — build backend images.
+- `make backend-up` — start backend stack (API at `http://localhost:8080`).
+- `make backend-down` — stop backend stack and remove volumes.
+- `make backend-ps` — list backend containers.
 
----
+**Frontend (Next.js)**
+- `make frontend-build` — build the frontend image.
+- `make frontend-up` — start the frontend (served at `http://localhost:3000`, expects backend on 8080).
+- `make frontend-down` — stop the frontend and remove volumes.
+- `make frontend-ps` — list frontend containers.
+- Frontend needs a `.env` in `FoodTok_Frontend/` before running. Suggested defaults:
+  ```
+  NEXT_PUBLIC_API_URL=http://localhost:8080/api
+  NEXT_PUBLIC_USE_MOCKS=false
+  NEXT_PUBLIC_RESTAURANT_SOURCE=yelp
+  NEXT_PUBLIC_YELP_CLIENT_ID=
+  YELP_API_KEY=
+  ```
+  Get a Public Yelp Client ID and Yelp API key at https://www.yelp.com/developers/v3/manage_app.
 
-## Getting Started
+**All services**
+- `make build-all` — build backend and frontend images.
+- `make up-all` — start both stacks.
+- `make down-all` — stop and remove both stacks.
+- `make ps-all` — list all containers.
 
-### Prerequisites
-- Install [Docker](https://docs.docker.com/get-docker/) (v20+ recommended)
-- Install [Docker Compose](https://docs.docker.com/compose/) (built into Docker Desktop / CLI v2)
-- You also need GNU make 
-    - This is installed by default on MacOS/Linux
-    - You need to install it on Windows machines
+**Backend health checks**
+- `make check` — Django system checks.
+- `make test` — Django test suite.
+- `make smoke` — imports the project inside the container to verify basics.
 
-### Build and Start the App
-```bash
-make build
-make up
-```
-
-Now the app should be up and running on port localhost:8000
-
-Navigate to the service in your browser
-```
-http://localhost:8000
-```
-You should see the app running
-
-### Turn off application
-```bash
-make down
-```
-Now is you run the docker ps (make ps) command, you won't see any containers running and the app is turned off.
-
-### Using the app
-
-This is what the homepage looks like
-
-![Homepage Image](/docs/PNGs/homepage.png)
+## Cloud Deployment
+- Infrastructure and services are defined with AWS CDK (TypeScript) and driven by the same `Makefile`.
+- `make deploy` — synthesize and deploy the CDK stack (no approval prompts) and invoke the test-runner Lambda, writing results to `tests/test-output.json`.
+- `make bootstrap` — one-time CDK bootstrap for a new AWS account/region.
+- `make destroy` — remove the deployed stack (irreversible for data).
+- `make clean` — remove local CDK artifacts (`cdk.out`).
+- Before deploying, ensure AWS credentials, the target region, and any required environment variables are set; the Makefile uses the `PROFILE` and `AWS_REGION` variables if you need to override defaults. Use `USE_SUDO=1` if your Docker setup requires sudo (e.g., `make backend-up USE_SUDO=1`).
