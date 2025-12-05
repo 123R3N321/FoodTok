@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react';
 import { checkAvailability, createHold } from '@/lib/api';
+import { useAuthStore } from '@/lib/stores';
 import type { TimeSlot, Hold } from '@/types/reservation';
 
 interface ReservationModalProps {
@@ -23,6 +24,7 @@ export default function ReservationModal({
   onClose,
   onHoldCreated,
 }: ReservationModalProps) {
+  const { user } = useAuthStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -104,12 +106,18 @@ export default function ReservationModal({
       return;
     }
 
+    if (!user?.id) {
+      setError('Please log in to make a reservation');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
+      console.log('👤 Creating hold for user:', user.id);
       const result = await createHold({
-        userId: 'current_user', // Replace with actual user ID from auth
+        userId: user.id,
         restaurantId,
         date: selectedDate,
         time: selectedTime,

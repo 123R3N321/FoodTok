@@ -11,7 +11,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore, useAppStore } from '@/lib/stores';
-import { getUserStats } from '@/lib/api';
+import { getUserStats, getOrderHistory } from '@/lib/api';
+import type { OrderHistoryItem } from '@/types/reservation';
 import { 
   User, 
   Settings, 
@@ -21,7 +22,9 @@ import {
   Edit3,
   MapPin,
   DollarSign,
-  Utensils
+  Utensils,
+  Calendar,
+  ChevronRight
 } from 'lucide-react';
 import { capitalizeWords } from '@/lib/utils';
 import Image from 'next/image';
@@ -38,6 +41,9 @@ export default function ProfilePage() {
     loading: true
   });
 
+  const [recentOrders, setRecentOrders] = useState<OrderHistoryItem[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+
   // Fetch real stats from API
   useEffect(() => {
     if (user?.id) {
@@ -52,7 +58,24 @@ export default function ProfilePage() {
         })
         .catch(err => {
           console.error('Failed to load stats:', err);
-          setStats(prev => ({ ...prev, loading: false }));
+          // Use fallback stats if API fails
+          setStats({
+            totalLikes: 0,
+            totalReservations: 0,
+            accountAge: Math.floor((Date.now() - new Date(user.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24)),
+            loading: false
+          });
+        });
+
+      // Load recent orders (last 3)
+      getOrderHistory(user.id, 'completed')
+        .then(data => {
+          setRecentOrders(data.slice(0, 3));
+          setOrdersLoading(false);
+        })
+        .catch(err => {
+          console.error('Failed to load recent orders:', err);
+          setOrdersLoading(false);
         });
     }
   }, [user?.id]);
@@ -209,7 +232,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={() => router.push('/settings')}>
               <Settings className="h-4 w-4 mr-2" />
               Update Preferences
             </Button>
@@ -251,18 +274,83 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity - Coming Soon */}
+        {/* Recent Activity */}
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Recent Orders</CardTitle>
+            {recentOrders.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.push('/history')}
+                className="text-primary"
+              >
+                View All
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-              <p className="text-sm text-muted-foreground">
-                Activity tracking coming soon
-              </p>
-            </div>
+            {ordersLoading ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : recentOrders.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  No completed orders yet
+                </p>
+                <Button 
+                  size="sm"
+                  onClick={() => router.push('/')}
+                >
+                  Start Exploring
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <motion.div
+                    key={order.reservationId}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/restaurant/${order.restaurantId}`)}
+                  >
+                    <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
+                      <img
+                        src={order.restaurantImage}
+                        alt={order.restaurantName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-sm truncate">
+                        {order.restaurantName}
+                      </h4>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {order.restaurantCuisine.join(', ')}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(order.date).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })}
+                        </span>
+                        {order.totalPaid && (
+                          <span className="font-semibold text-primary">
+                            ${order.totalPaid.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
