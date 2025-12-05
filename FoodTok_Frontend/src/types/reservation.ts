@@ -184,3 +184,23 @@ export interface ReservationListItem {
   confirmationCode: string;
   depositAmount: number;
 }
+
+// For order/dining history display
+export interface OrderHistoryItem {
+  reservationId: string;
+  restaurantId: string;
+  restaurantName: string;
+  restaurantImage: string;
+  restaurantCuisine: string[];
+  restaurantAddress?: string;
+  date: string;
+  time: string;
+  partySize: number;
+  status: 'completed' | 'cancelled' | 'no-show';
+  confirmationCode: string;
+  depositAmount: number;
+  totalPaid?: number;          // Total amount paid (for completed)
+  specialRequests?: string;
+  completedAt?: number;        // Unix timestamp when completed
+  cancelledAt?: number;        // Unix timestamp when cancelled
+}

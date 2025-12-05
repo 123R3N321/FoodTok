@@ -10,11 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { MapPin, Calendar, Clock, Users, CreditCard, Check, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import HoldTimer from '@/components/reservation/HoldTimer';
 import { confirmReservation, getUserActiveHold } from '@/lib/api';
-import { useReservationStore } from '@/lib/stores';
+import { useReservationStore, useAuthStore } from '@/lib/stores';
 import type { Hold, Reservation } from '@/types/reservation';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const clearHold = useReservationStore((state) => state.clearHold);
   
   const [hold, setHold] = useState<Hold | null>(null);
@@ -36,6 +37,11 @@ export default function CheckoutPage() {
   }, []);
 
   const loadActiveHold = async () => {
+    if (!user?.id) {
+      router.push('/login');
+      return;
+    }
+    
     try {
       console.log('🔍 Checking for hold in zustand store...');
       const currentHold = useReservationStore.getState().activeHold;
@@ -50,7 +56,7 @@ export default function CheckoutPage() {
       
       console.log('⚠️ No hold in store, trying backend...');
       // Fallback to backend (shouldn't happen normally)
-      const backendHold = await getUserActiveHold('current_user');
+      const backendHold = await getUserActiveHold(user.id);
       if (!backendHold) {
         console.error('❌ No active hold found anywhere');
         router.push('/');
@@ -156,7 +162,7 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmReservation = async () => {
-    if (!hold) return;
+    if (!hold || !user?.id) return;
     
     setError('');
     
@@ -169,13 +175,14 @@ export default function CheckoutPage() {
     try {
       console.log('💳 Processing payment for reservation...');
       console.log('💰 Deposit amount:', hold.depositAmount);
+      console.log('👤 User ID:', user.id);
       
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const result = await confirmReservation({
         holdId: hold.holdId,
-        userId: 'current_user',
+        userId: user.id,
         paymentMethod: {
           type: 'credit-card',
           last4: cardNumber.replace(/\s/g, '').slice(-4),

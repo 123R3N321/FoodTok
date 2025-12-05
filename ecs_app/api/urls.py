@@ -3,10 +3,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Legacy test endpoints
+    # Health check endpoint
     path("helloECS", views.hello_ecs),
-    path("insertECS", views.insert_item),
-    path("listECS", views.list_items),
+
+    # Legacy test endpoints
     path("uploadECS", views.upload_file),
     path("downloadECS/<str:filename>", views.download_file),
 
@@ -38,5 +38,4 @@ urlpatterns = [
     path("reservations/<str:reservation_id>/modify", views.modify_reservation, name="reservation-modify"),
     path("reservations/<str:reservation_id>/cancel", views.cancel_reservation, name="reservation-cancel"),
 
-    path("", views.home, name="api-home"),
 ]

@@ -60,6 +60,7 @@ export const getUserReservations = useMocksForReservations ? MockReservations.ge
 export const getReservationById = useMocksForReservations ? MockReservations.getReservationById : RealReservations.getReservationById;
 export const modifyReservation = useMocksForReservations ? MockReservations.modifyReservation : RealReservations.modifyReservation;
 export const cancelReservation = useMocksForReservations ? MockReservations.cancelReservation : RealReservations.cancelReservation;
+export const getOrderHistory = useMocksForReservations ? MockReservations.getOrderHistory : RealReservations.getOrderHistory;
 
 // Restaurants (mock, Yelp, or backend)
 export const getDiscoveryRestaurants = useMockRestaurants 

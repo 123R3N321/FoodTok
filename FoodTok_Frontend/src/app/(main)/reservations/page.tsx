@@ -5,38 +5,48 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Users, MapPin, ChevronRight, X, Edit } from 'lucide-react';
 import { getUserReservations, cancelReservation } from '@/lib/api';
+import { useAuthStore } from '@/lib/stores';
 import type { ReservationListItem } from '@/types/reservation';
 
 export default function ReservationsPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [reservations, setReservations] = useState<ReservationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user?.id) {
+      router.push('/login');
+      return;
+    }
     loadReservations();
-  }, [filter]);
+  }, [filter, user?.id]);
 
   const loadReservations = async () => {
+    if (!user?.id) return;
+    
     setLoading(true);
     try {
-      const data = await getUserReservations('current_user', filter);
+      const data = await getUserReservations(user.id, filter);
       setReservations(data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load reservations:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = async (reservationId: string) => {
+    if (!user?.id) return;
+    
     const confirmed = confirm('Are you sure you want to cancel this reservation? Refund depends on cancellation policy.');
     if (!confirmed) return;
 
     setCancellingId(reservationId);
     try {
-      const result = await cancelReservation(reservationId, 'current_user');
+      const result = await cancelReservation(reservationId, user.id);
       alert(result.message);
       loadReservations();
     } catch (err: any) {
@@ -132,11 +142,14 @@ export default function ReservationsPage() {
               >
                 <div className="flex flex-col md:flex-row">
                   {/* Restaurant Image */}
-                  <div className="md:w-48 h-48 md:h-auto flex-shrink-0">
+                  <div className="md:w-48 h-48 md:h-auto flex-shrink-0 bg-muted">
                     <img
-                      src={reservation.restaurantImage}
-                      alt={reservation.restaurantName}
+                      src={reservation.restaurantImage || '/placeholder-restaurant.jpg'}
+                      alt={reservation.restaurantName || 'Restaurant'}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400';
+                      }}
                     />
                   </div>
 
@@ -145,10 +158,10 @@ export default function ReservationsPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-xl font-bold mb-1">
-                          {reservation.restaurantName}
+                          {reservation.restaurantName || 'Restaurant'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {reservation.restaurantCuisine.join(', ')}
+                          {reservation.restaurantCuisine?.join(', ') || 'Cuisine not specified'}
                         </p>
                       </div>
                       <span
