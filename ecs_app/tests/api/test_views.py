@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
 
@@ -146,4 +147,79 @@ def test_user_stats_endpoint_has_core_metrics(
     stats = response.json()
     for field in ("totalLikes", "totalReservations", "topCuisines"):
         assert field in stats
+
+
+def _create_favorite(
+    api_base_url: str,
+    http_client,
+    user_id: str,
+    restaurant_id: str,
+    *,
+    match_score: int = 90,
+) -> dict:
+    payload = {
+        "userId": user_id,
+        "restaurantId": restaurant_id,
+        "restaurantName": f"Test Favorite {uuid.uuid4().hex[:6]}",
+        "restaurantImage": "",
+        "matchScore": match_score,
+    }
+    response = http_client.post(f"{api_base_url}/favorites", json=payload, timeout=30)
+    assert response.status_code in {200, 201}, response.text
+    data = response.json()
+    favorite = data.get("favorite", {})
+    assert isinstance(favorite, dict)
+    assert favorite.get("userId") == user_id
+    assert favorite.get("restaurantId") == restaurant_id
+    return favorite
+
+
+def _remove_favorite(
+    api_base_url: str,
+    http_client,
+    user_id: str,
+    restaurant_id: str,
+) -> dict:
+    params = {"userId": user_id, "restaurantId": restaurant_id}
+    response = http_client.delete(f"{api_base_url}/favorites", params=params, timeout=30)
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def test_add_favorite_endpoint_creates_record(
+    api_base_url: str,
+    http_client,
+    sample_user_id: str,
+    sample_restaurant_id: str,
+) -> None:
+    # Ensure clean slate
+    _remove_favorite(api_base_url, http_client, sample_user_id, sample_restaurant_id)
+    favorite = _create_favorite(api_base_url, http_client, sample_user_id, sample_restaurant_id)
+    assert favorite.get("matchScore") is not None
+
+    # Cleanup
+    _remove_favorite(api_base_url, http_client, sample_user_id, sample_restaurant_id)
+
+
+def test_remove_favorite_endpoint_confirms_deletion(
+    api_base_url: str,
+    http_client,
+    sample_user_id: str,
+    sample_restaurant_id: str,
+) -> None:
+    _create_favorite(api_base_url, http_client, sample_user_id, sample_restaurant_id)
+
+    params = {"userId": sample_user_id, "restaurantId": sample_restaurant_id}
+    response = http_client.delete(f"{api_base_url}/favorites", params=params, timeout=30)
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data.get("success") is True
+
+    check_response = http_client.get(
+        f"{api_base_url}/favorites/check",
+        params=params,
+        timeout=30,
+    )
+    assert check_response.status_code == 200
+    assert check_response.json().get("isFavorite") is False
 
