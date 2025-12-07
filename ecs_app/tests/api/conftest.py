@@ -106,3 +106,38 @@ def sample_restaurant_id() -> str:
 def sample_reservation_id() -> str:
     return SAMPLE_RESERVATION_ID
 
+
+@pytest.fixture
+def hold_factory(
+    api_base_url: str,
+    http_client,
+    sample_user_id: str,
+    sample_restaurant_id: str,
+):
+    """Factory fixture for creating reservation holds via the API."""
+
+    def _create_hold(
+        *,
+        user_id: str = sample_user_id,
+        restaurant_id: str = sample_restaurant_id,
+        date: str = "2025-12-24",
+        time_slot: str = "19:00",
+        party_size: int = 2,
+    ):
+        payload = {
+            "userId": user_id,
+            "restaurantId": restaurant_id,
+            "date": date,
+            "time": time_slot,
+            "partySize": party_size,
+        }
+        response = http_client.post(f"{api_base_url}/reservations/hold", json=payload, timeout=30)
+        assert response.status_code == 201, response.text
+        data = response.json()
+        hold = data.get("hold", {})
+        assert isinstance(hold, dict)
+        assert "holdId" in hold, "hold response missing holdId"
+        return hold
+
+    return _create_hold
+

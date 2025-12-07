@@ -2,32 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-import pytest
-
-
-def _create_hold(
-    api_base_url: str,
-    http_client,
-    user_id: str,
-    restaurant_id: str,
-) -> Dict[str, Any]:
-    payload = {
-        "userId": user_id,
-        "restaurantId": restaurant_id,
-        "date": "2025-12-24",
-        "time": "19:00",
-        "partySize": 2,
-    }
-    response = http_client.post(f"{api_base_url}/reservations/hold", json=payload, timeout=30)
-    assert response.status_code == 201, response.text
-    data = response.json()
-    assert data.get("success") is True
-    hold = data.get("hold", {})
-    assert isinstance(hold, dict)
-    assert "holdId" in hold
-    return hold
+from typing import Any
 
 
 def test_insert_and_list_items(api_base_url: str, http_client) -> None:
@@ -85,9 +60,13 @@ def test_reservation_availability_structure(
 
 
 def test_get_active_hold_returns_latest_hold(
-    api_base_url: str, http_client, sample_user_id: str, sample_restaurant_id: str
+    api_base_url: str,
+    http_client,
+    sample_user_id: str,
+    sample_restaurant_id: str,
+    hold_factory,
 ) -> None:
-    hold = _create_hold(api_base_url, http_client, sample_user_id, sample_restaurant_id)
+    hold = hold_factory(user_id=sample_user_id, restaurant_id=sample_restaurant_id)
     response = http_client.get(
         f"{api_base_url}/reservations/hold/active",
         params={"userId": sample_user_id},
@@ -104,9 +83,13 @@ def test_get_active_hold_returns_latest_hold(
 
 
 def test_confirm_reservation_returns_confirmation(
-    api_base_url: str, http_client, sample_user_id: str, sample_restaurant_id: str
+    api_base_url: str,
+    http_client,
+    sample_user_id: str,
+    sample_restaurant_id: str,
+    hold_factory,
 ) -> None:
-    hold = _create_hold(api_base_url, http_client, sample_user_id, sample_restaurant_id)
+    hold = hold_factory(user_id=sample_user_id, restaurant_id=sample_restaurant_id)
     payload = {
         "holdId": hold["holdId"],
         "userId": sample_user_id,
