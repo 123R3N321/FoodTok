@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: frontend
     environment:
-      - BACKEND_ENDPOINT=http://localhost:8080
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
     ports:
       - "3000:3000"
     networks:
