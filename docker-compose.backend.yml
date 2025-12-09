@@ -49,7 +49,7 @@ services:
   ecs-app:
     build:
       context: ./ecs_app               
-      dockerfile: Dockerfile.ecs       
+      dockerfile: Dockerfile.backend
     container_name: ecs-app
     environment:
       - IS_LOCAL=true
