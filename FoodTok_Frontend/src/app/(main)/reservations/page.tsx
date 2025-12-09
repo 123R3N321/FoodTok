@@ -80,9 +80,9 @@ export default function ReservationsPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setFilter('upcoming')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === 'upcoming'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -90,9 +90,9 @@ export default function ReservationsPage() {
           </button>
           <button
             onClick={() => setFilter('past')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === 'past'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -122,7 +122,7 @@ export default function ReservationsPage() {
             {filter === 'upcoming' && (
               <button
                 onClick={() => router.push('/')}
-                className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90"
+                className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Explore Restaurants
               </button>
@@ -138,7 +138,9 @@ export default function ReservationsPage() {
                 key={reservation.reservationId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-card rounded-2xl shadow-lg overflow-hidden border"
+                className={`bg-card rounded-2xl shadow-lg overflow-hidden border transition-all ${
+                  filter === 'past' ? 'opacity-70 scale-95' : ''
+                }`}
               >
                 <div className="flex flex-col md:flex-row">
                   {/* Restaurant Image */}
@@ -175,11 +177,11 @@ export default function ReservationsPage() {
 
                     {/* Confirmation Code (for upcoming) */}
                     {filter === 'upcoming' && ['confirmed', 'modified'].includes(reservation.status) && (
-                      <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20">
-                        <div className="text-xs text-primary font-semibold mb-1">
+                      <div className="mb-4 p-3 bg-orange-500/10 rounded-xl border border-orange-500/20">
+                        <div className="text-xs text-orange-500 font-semibold mb-1">
                           CONFIRMATION CODE
                         </div>
-                        <div className="text-2xl font-bold text-primary font-mono">
+                        <div className="text-2xl font-bold text-orange-500 font-mono">
                           {reservation.confirmationCode}
                         </div>
                       </div>
@@ -188,7 +190,7 @@ export default function ReservationsPage() {
                     {/* Info Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar size={16} className="text-primary" />
+                        <Calendar size={16} className="text-orange-500" />
                         <span>
                           {new Date(reservation.date).toLocaleDateString('en-US', {
                             weekday: 'short',
@@ -198,11 +200,11 @@ export default function ReservationsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock size={16} className="text-primary" />
+                        <Clock size={16} className="text-orange-500" />
                         <span>{reservation.time}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Users size={16} className="text-primary" />
+                        <Users size={16} className="text-orange-500" />
                         <span>{reservation.partySize} guests</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
@@ -229,7 +231,10 @@ export default function ReservationsPage() {
                             'Cancel'
                           )}
                         </button>
-                        <button className="flex-1 py-2 px-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90">
+                        <button 
+                          onClick={() => router.push(`/restaurant/${reservation.restaurantId}`)}
+                          className="flex-1 py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
                           View Details
                         </button>
                       </div>

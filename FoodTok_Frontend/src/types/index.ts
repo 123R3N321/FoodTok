@@ -72,6 +72,7 @@ export interface Restaurant {
   hours: OperatingHours;
   menu: MenuItem[];
   features: RestaurantFeature[];
+  url?: string; // Yelp URL
   createdAt: Date;
   updatedAt: Date;
 }

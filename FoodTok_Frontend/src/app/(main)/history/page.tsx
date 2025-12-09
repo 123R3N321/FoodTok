@@ -14,6 +14,9 @@ export default function HistoryPage() {
   const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'cancelled'>('all');
+  const [reviewModal, setReviewModal] = useState<{ open: boolean; restaurant: string; reservationId: string }>({ open: false, restaurant: '', reservationId: '' });
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
 
   useEffect(() => {
     loadHistory();
@@ -62,9 +65,9 @@ export default function HistoryPage() {
         <div className="flex gap-2 mb-6 overflow-x-auto">
           <button
             onClick={() => setFilter('all')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors whitespace-nowrap ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
               filter === 'all'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -72,9 +75,9 @@ export default function HistoryPage() {
           </button>
           <button
             onClick={() => setFilter('completed')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors whitespace-nowrap ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
               filter === 'completed'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -82,9 +85,9 @@ export default function HistoryPage() {
           </button>
           <button
             onClick={() => setFilter('cancelled')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors whitespace-nowrap ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
               filter === 'cancelled'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -94,23 +97,15 @@ export default function HistoryPage() {
 
         {/* Stats Summary */}
         {!loading && orders.length > 0 && (
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-card p-4 rounded-xl border">
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-2xl font-bold text-orange-500">
                 {orders.filter(o => o.status === 'completed').length}
               </div>
               <div className="text-xs text-muted-foreground">Completed</div>
             </div>
             <div className="bg-card p-4 rounded-xl border">
-              <div className="text-2xl font-bold text-primary">
-                ${orders.filter(o => o.status === 'completed')
-                  .reduce((sum, o) => sum + (o.totalPaid || 0), 0)
-                  .toFixed(0)}
-              </div>
-              <div className="text-xs text-muted-foreground">Total Spent</div>
-            </div>
-            <div className="bg-card p-4 rounded-xl border">
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-2xl font-bold text-orange-500">
                 {orders.reduce((sum, o) => sum + o.partySize, 0)}
               </div>
               <div className="text-xs text-muted-foreground">Total Guests</div>
@@ -139,7 +134,7 @@ export default function HistoryPage() {
             </p>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90"
+              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               Discover Restaurants
             </button>
@@ -184,7 +179,7 @@ export default function HistoryPage() {
                           {order.restaurantName}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {order.restaurantCuisine.join(', ')}
+                          {order.restaurantCuisine?.join(', ') || 'Restaurant'}
                         </p>
                       </div>
                     </div>
@@ -192,7 +187,7 @@ export default function HistoryPage() {
                     {/* Info Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar size={16} className="text-primary" />
+                        <Calendar size={16} className="text-orange-500" />
                         <span>
                           {new Date(order.date).toLocaleDateString('en-US', {
                             weekday: 'short',
@@ -203,16 +198,16 @@ export default function HistoryPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock size={16} className="text-primary" />
+                        <Clock size={16} className="text-orange-500" />
                         <span>{order.time}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Users size={16} className="text-primary" />
+                        <Users size={16} className="text-orange-500" />
                         <span>{order.partySize} guests</span>
                       </div>
                       {order.status === 'completed' && order.totalPaid && (
                         <div className="flex items-center gap-2 text-sm">
-                          <Receipt size={16} className="text-primary" />
+                          <Receipt size={16} className="text-orange-500" />
                           <span className="font-semibold">
                             ${order.totalPaid.toFixed(2)} paid
                           </span>
@@ -249,11 +244,12 @@ export default function HistoryPage() {
                       <div className="flex gap-3 pt-4 border-t">
                         <button
                           onClick={() => router.push(`/restaurant/${order.restaurantId}`)}
-                          className="flex-1 py-2 px-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90"
+                          className="flex-1 py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                           Book Again
                         </button>
                         <button
+                          onClick={() => setReviewModal({ open: true, restaurant: order.restaurantName, reservationId: order.reservationId })}
                           className="flex-1 py-2 px-4 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:bg-secondary/80 flex items-center justify-center gap-2"
                         >
                           <Star size={16} />
@@ -267,7 +263,7 @@ export default function HistoryPage() {
                       <div className="pt-4 border-t">
                         <button
                           onClick={() => router.push(`/restaurant/${order.restaurantId}`)}
-                          className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90"
+                          className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                           Book Again
                         </button>
@@ -280,6 +276,66 @@ export default function HistoryPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {reviewModal.open && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-xl font-bold mb-4">Leave a Review</h3>
+            <p className="text-sm text-muted-foreground mb-4">{reviewModal.restaurant}</p>
+            
+            {/* Star Rating */}
+            <div className="flex gap-2 mb-4 justify-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setReviewRating(star)}
+                  className="transition-transform hover:scale-110"
+                >
+                  <Star 
+                    size={32} 
+                    className={star <= reviewRating ? 'fill-orange-500 text-orange-500' : 'text-muted-foreground'}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Review Text */}
+            <textarea
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Share your experience..."
+              className="w-full p-3 bg-background border border-border rounded-lg resize-none h-32 mb-4"
+            />
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setReviewModal({ open: false, restaurant: '', reservationId: '' });
+                  setReviewText('');
+                  setReviewRating(5);
+                }}
+                className="flex-1 py-2 px-4 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:bg-secondary/80"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  console.log('📝 Review submitted:', { reservationId: reviewModal.reservationId, rating: reviewRating, text: reviewText });
+                  // TODO: API call to submit review
+                  setReviewModal({ open: false, restaurant: '', reservationId: '' });
+                  setReviewText('');
+                  setReviewRating(5);
+                }}
+                className="flex-1 py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold"
+              >
+                Submit Review
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

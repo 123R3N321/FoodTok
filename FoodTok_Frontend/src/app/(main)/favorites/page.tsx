@@ -39,7 +39,18 @@ export default function FavoritesPage() {
         console.log('📡 Fetching favorites for user:', user.id);
         const userFavorites = await getUserFavorites(user.id);
         console.log('📋 Loaded', userFavorites.length, 'favorites from backend');
-        setFavorites(userFavorites);
+        
+        // Sort by matchScore (highest first)
+        const sortedFavorites = userFavorites.sort((a, b) => {
+          return b.matchScore - a.matchScore;
+        });
+        
+        console.log('🎯 Sorted favorites by score:', sortedFavorites.slice(0, 5).map(f => ({
+          name: f.restaurantName,
+          score: f.matchScore
+        })));
+        
+        setFavorites(sortedFavorites);
       } catch (error) {
         console.error('❌ Failed to fetch favorites:', error);
       } finally {

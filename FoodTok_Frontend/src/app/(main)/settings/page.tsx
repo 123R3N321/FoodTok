@@ -28,28 +28,42 @@ export default function SettingsPage() {
   const { user, logout, updatePreferences } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
   const [editedUser, setEditedUser] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || ''
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
   const handleSaveProfile = async () => {
     if (!user) return;
     
     setIsSaving(true);
+    setError('');
     try {
-      const response = await fetch('/api/auth/preferences', {
+      const response = await fetch(`http://localhost:8080/api/auth/preferences`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
           firstName: editedUser.firstName,
-          lastName: editedUser.lastName
+          lastName: editedUser.lastName,
+          email: editedUser.email
         })
       });
 
-      if (!response.ok) throw new Error('Failed to save profile');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Failed to save profile' }));
+        throw new Error(error.error || 'Failed to save profile');
+      }
 
       const data = await response.json();
       
@@ -58,15 +72,68 @@ export default function SettingsPage() {
         user: state.user ? { 
           ...state.user, 
           firstName: editedUser.firstName,
-          lastName: editedUser.lastName 
+          lastName: editedUser.lastName,
+          email: editedUser.email
         } : null
       }));
       
       setIsEditing(false);
       console.log('✅ Profile updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to save profile:', error);
-      alert('Failed to save profile changes. Please try again.');
+      setError(error.message || 'Failed to save profile changes. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!user) return;
+    
+    setPasswordError('');
+    setPasswordSuccess('');
+    
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('All fields are required');
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters');
+      return;
+    }
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Failed to change password' }));
+        throw new Error(error.error || 'Failed to change password');
+      }
+      
+      setPasswordSuccess('Password changed successfully!');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setTimeout(() => {
+        setIsChangingPassword(false);
+        setPasswordSuccess('');
+      }, 2000);
+    } catch (error: any) {
+      setPasswordError(error.message || 'Failed to change password. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -83,26 +150,7 @@ export default function SettingsPage() {
       icon: User,
       items: [
         { label: 'Edit Profile', action: () => setIsEditing(true) },
-        { label: 'Change Password', action: () => console.log('Change password') },
-        { label: 'Privacy Settings', action: () => console.log('Privacy') }
-      ]
-    },
-    {
-      title: 'Notifications',
-      icon: Bell,
-      items: [
-        { label: 'Push Notifications', action: () => console.log('Push notifications') },
-        { label: 'Email Updates', action: () => console.log('Email updates') },
-        { label: 'Order Updates', action: () => console.log('Order updates') }
-      ]
-    },
-    {
-      title: 'Security',
-      icon: Shield,
-      items: [
-        { label: 'Two-Factor Auth', action: () => console.log('2FA') },
-        { label: 'Login History', action: () => console.log('Login history') },
-        { label: 'Connected Devices', action: () => console.log('Devices') }
+        { label: 'Change Password', action: () => setIsChangingPassword(true) }
       ]
     }
   ];
@@ -143,7 +191,10 @@ export default function SettingsPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setIsEditing(true);
+                    setError('');
+                  }}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -154,6 +205,11 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                {error}
+              </div>
+            )}
             {isEditing ? (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -206,7 +262,7 @@ export default function SettingsPage() {
                   <Button 
                     onClick={handleSaveProfile} 
                     disabled={isSaving}
-                    className="flex-1"
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     {isSaving ? 'Saving...' : 'Save Changes'}
@@ -239,6 +295,114 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Change Password */}
+        {isChangingPassword && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Change Password
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setIsChangingPassword(false);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+              <CardDescription>
+                Update your account password
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {passwordError && (
+                <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                  {passwordError}
+                </div>
+              )}
+              {passwordSuccess && (
+                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500 text-sm">
+                  {passwordSuccess}
+                </div>
+              )}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Current Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData(prev => ({ 
+                      ...prev, 
+                      currentPassword: e.target.value 
+                    }))}
+                    placeholder="Enter current password"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    New Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData(prev => ({ 
+                      ...prev, 
+                      newPassword: e.target.value 
+                    }))}
+                    placeholder="Enter new password (min 8 characters)"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Confirm New Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData(prev => ({ 
+                      ...prev, 
+                      confirmPassword: e.target.value 
+                    }))}
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    onClick={handleChangePassword} 
+                    disabled={isSaving}
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {isSaving ? 'Updating...' : 'Change Password'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsChangingPassword(false);
+                      setPasswordError('');
+                      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                    }}
+                    disabled={isSaving}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </motion.div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Food Preferences */}
         <Card>
           <CardHeader>
@@ -256,7 +420,7 @@ export default function SettingsPage() {
                     user.preferences.cuisineTypes.map((cuisine) => (
                       <span
                         key={cuisine}
-                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                        className="px-3 py-1 bg-orange-500/10 text-orange-500 rounded-full text-sm"
                       >
                         {cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
                       </span>
@@ -275,7 +439,7 @@ export default function SettingsPage() {
               <Button 
                 variant="outline" 
                 onClick={() => router.push('/onboarding')}
-                className="w-full"
+                className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
               >
                 Update Preferences
               </Button>

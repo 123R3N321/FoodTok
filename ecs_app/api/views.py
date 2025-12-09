@@ -527,6 +527,7 @@ def update_preferences(request):
       "preferences": {...},
       "firstName": "John",  // optional
       "lastName": "Doe",    // optional
+      "email": "john@example.com",  // optional
       "bio": "..."          // optional
     }
     """
@@ -535,10 +536,30 @@ def update_preferences(request):
         preferences = request.data.get("preferences", {})
         first_name = request.data.get("firstName")
         last_name = request.data.get("lastName")
+        email = request.data.get("email")
         bio = request.data.get("bio")
         
         if not user_id:
             return Response({"error": "userId required"}, status=400)
+        
+        # Validate email format if provided
+        if email is not None:
+            import re
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                return Response({"error": "Invalid email format"}, status=400)
+            
+            # Check if email is already taken by another user
+            table = dynamodb.Table(TABLE_USERS)
+            scan_response = table.scan(
+                FilterExpression="email = :email AND userId <> :userId",
+                ExpressionAttributeValues={
+                    ":email": email,
+                    ":userId": user_id
+                }
+            )
+            if scan_response.get("Items"):
+                return Response({"error": "Email already in use"}, status=400)
         
         """
         # Convert floats to Decimal for DynamoDB
@@ -573,6 +594,10 @@ def update_preferences(request):
         if last_name is not None:
             update_expr += ", lastName = :lastName"
             expr_values[":lastName"] = last_name
+        
+        if email is not None:
+            update_expr += ", email = :email"
+            expr_values[":email"] = email
         
         if bio is not None:
             update_expr += ", bio = :bio"
@@ -617,6 +642,67 @@ def get_profile(request, user_id):
         return Response({"user": user_data}, status=200)
         
     except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(["POST"])
+def change_password(request):
+    """
+    POST /api/auth/change-password
+    Body: { 
+      "userId": "user_001",
+      "currentPassword": "oldpass123",
+      "newPassword": "newpass123"
+    }
+    """
+    try:
+        user_id = request.data.get("userId")
+        current_password = request.data.get("currentPassword")
+        new_password = request.data.get("newPassword")
+        
+        if not user_id or not current_password or not new_password:
+            return Response({"error": "userId, currentPassword, and newPassword required"}, status=400)
+        
+        if len(new_password) < 8:
+            return Response({"error": "New password must be at least 8 characters"}, status=400)
+        
+        # Get user from DynamoDB
+        table = dynamodb.Table(TABLE_USERS)
+        response = table.get_item(Key={"userId": user_id})
+        
+        user = response.get("Item")
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+        
+        # Verify current password
+        stored_password = user.get("password", "")
+        if isinstance(stored_password, str) and stored_password.startswith("$2b$"):
+            # Hashed password
+            if not bcrypt.checkpw(current_password.encode('utf-8'), stored_password.encode('utf-8')):
+                return Response({"error": "Current password is incorrect"}, status=401)
+        else:
+            # Legacy plain text
+            if stored_password != current_password:
+                return Response({"error": "Current password is incorrect"}, status=401)
+        
+        # Hash and update to new password
+        from datetime import datetime, timezone
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        table.update_item(
+            Key={"userId": user_id},
+            UpdateExpression="SET password = :pwd, updatedAt = :updated",
+            ExpressionAttributeValues={
+                ":pwd": hashed_password,
+                ":updated": datetime.now(timezone.utc).isoformat()
+            }
+        )
+        
+        return Response({"message": "Password changed successfully"}, status=200)
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
 

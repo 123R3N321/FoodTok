@@ -21,6 +21,7 @@ urlpatterns = [
     path("auth/signup", views.signup, name="auth-signup"),
     path("auth/preferences", views.update_preferences, name="auth-preferences"),
     path("auth/profile/<str:user_id>", views.get_profile, name="auth-profile"),
+    path("auth/change-password", views.change_password, name="auth-change-password"),
     
     # Favorites endpoints
     path("favorites/check", views.check_favorite, name="favorites-check"),

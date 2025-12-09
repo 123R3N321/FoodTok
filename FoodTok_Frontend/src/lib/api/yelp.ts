@@ -172,6 +172,7 @@ function transformYelpBusinessToRestaurant(business: YelpBusiness | YelpBusiness
     hours,
     menu: [], // Yelp doesn't provide menu data - would need separate integration
     features: [], // Would need to parse from Yelp transactions/attributes
+    url: business.url, // Yelp restaurant URL
     createdAt: new Date(),
     updatedAt: new Date(),
   };
