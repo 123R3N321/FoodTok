@@ -106,6 +106,25 @@ services:
     networks:
       - localstack-net
 
+  # -----------------------------
+  # DynamoDB Admin GUI
+  # -----------------------------
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    container_name: dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamo:8000
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+    depends_on:
+      dynamo:
+        condition: service_healthy
+    networks:
+      - localstack-net
+
 networks:
   localstack-net:
     name: localstack-net
