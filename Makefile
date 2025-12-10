@@ -79,6 +79,17 @@ frontend-test-coverage:
 frontend-test-watch:
 	cd FoodTok_Frontend && npm test -- --watch
 
+# ------ Backend Testing ------
+
+backend-test:
+	cd ecs_app && pytest tests/api/ -v
+
+backend-test-coverage:
+	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html
+
+backend-test-no-stack:
+	FOODTOK_SMOKE_MANAGE_STACK=0 pytest ecs_app/tests/api/ -v
+
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------
