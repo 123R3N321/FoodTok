@@ -4,11 +4,12 @@ import uuid
 import random
 import json
 import bcrypt
-from datetime import datetime
+import requests
+import traceback
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 from io import BytesIO
 from django.http import JsonResponse
-from django.shortcuts import render
-
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -20,45 +21,14 @@ from .aws import get_dynamodb, get_s3
 # ===============================
 IS_LOCAL = os.getenv("IS_LOCAL", "false").lower() == "true"
 LOCAL_S3_ENDPOINT = os.getenv("LOCAL_S3_ENDPOINT")
-
-# Add DDB tables and S3 Buckets here
-TABLE_USERS = os.getenv("DDB_USERS_TABLE", "Users")
-TABLE_RESTAURANTS = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
-TABLE_RESERVATIONS = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
-TABLE_USER_PREFERENCES = os.getenv("DDB_USER_PREFERENCES_TABLE", "UserPreferences")
-TABLE_USER_FAVORITE_CUISINES = os.getenv("DDB_USER_FAVORITE_CUISINES_TABLE", "UserFavoriteCuisines")
-TABLE_CHAINSTORES = os.getenv("DDB_CHAINSTORES_TABLE", "ChainStores")
-TABLE_RESTAURANT_HOURS = os.getenv("DDB_RESTAURANT_HOURS_TABLE", "RestaurantHours")
-TABLE_RESTAURANT_SPECIAL_HOURS = os.getenv("DDB_RESTAURANT_SPECIAL_HOURS_TABLE", "RestaurantSpecialHours")
-TABLE_CUISINES = os.getenv("DDB_CUISINES_TABLE", "Cuisines")
-TABLE_RESTAURANT_CUISINES = os.getenv("DDB_RESTAURANT_CUISINES_TABLE", "RestaurantCuisines")
-TABLE_AMENITIES = os.getenv("DDB_AMENITIES_TABLE", "Amenities")
-TABLE_RESTAURANT_AMENITIES = os.getenv("DDB_RESTAURANT_AMENITIES_TABLE", "RestaurantAmenities")
-TABLE_RESTAURANT_IMAGES = os.getenv("DDB_RESTAURANT_IMAGES_TABLE", "RestaurantImages")
-TABLE_DINING_TABLES = os.getenv("DDB_DINING_TABLES_TABLE", "DiningTables")
-TABLE_TABLE_AVAILABILITY = os.getenv("DDB_TABLE_AVAILABILITY_TABLE", "TableAvailability")
-TABLE_TABLE_AVAILABILITY_OVERRIDES = os.getenv("DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE", "TableAvailabilityOverrides")
-TABLE_TABLE_AVAILABILITY_SNAPSHOTS = os.getenv("DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE", "TableAvailabilitySnapshots")
-TABLE_RESERVATION_TABLES = os.getenv("DDB_RESERVATION_TABLES_TABLE", "ReservationTables")
-TABLE_RESERVATION_HISTORY = os.getenv("DDB_RESERVATION_HISTORY_TABLE", "ReservationHistory")
-TABLE_WAITLIST_ENTRIES = os.getenv("DDB_WAITLIST_ENTRIES_TABLE", "WaitlistEntries")
-TABLE_REVIEWS = os.getenv("DDB_REVIEWS_TABLE", "Reviews")
-TABLE_REVIEW_IMAGES = os.getenv("DDB_REVIEW_IMAGES_TABLE", "ReviewImages")
-TABLE_REVIEW_RESPONSES = os.getenv("DDB_REVIEW_RESPONSES_TABLE", "ReviewResponses")
-TABLE_REVIEW_HELPFUL_VOTES = os.getenv("DDB_REVIEW_HELPFUL_VOTES_TABLE", "ReviewHelpfulVotes")
-TABLE_FAVORITES = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
-TABLE_RECOMMENDATION_SCORES = os.getenv("DDB_RECOMMENDATION_SCORES_TABLE", "RecommendationScores")
-TABLE_USER_INTERACTIONS = os.getenv("DDB_USER_INTERACTIONS_TABLE", "UserInteractions")
-TABLE_NOTIFICATIONS = os.getenv("DDB_NOTIFICATIONS_TABLE", "Notifications")
-TABLE_ADMINS = os.getenv("DDB_ADMINS_TABLE", "Admins")
-TABLE_ADMIN_ACTIVITY_LOGS = os.getenv("DDB_ADMIN_ACTIVITY_LOGS_TABLE", "AdminActivityLogs")
-TABLE_USER_NO_SHOW_RECORDS = os.getenv("DDB_USER_NO_SHOW_RECORDS_TABLE", "UserNoShowRecords")
-TABLE_SYSTEM_SETTINGS = os.getenv("DDB_SYSTEM_SETTINGS_TABLE", "SystemSettings")
-TABLE_USER_STATS = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
-TABLE_HOLDS = os.getenv("DDB_HOLDS_TABLE", "Holds")
-
 BUCKET_IMAGES = os.getenv("S3_IMAGE_BUCKET", "foodtok-local-images")
 
+TABLE_USERS = os.getenv("DDB_USERS_TABLE", "Users")
+TABLE_RESTAURANTS = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
+TABLE_FAVORITES = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
+TABLE_RESERVATIONS = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
+TABLE_USER_STATS = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+TABLE_HOLDS = os.getenv("DDB_HOLDS_TABLE", "Holds")
 
 dynamodb = get_dynamodb()
 s3 = get_s3()
@@ -70,14 +40,12 @@ s3 = get_s3()
 class DecimalEncoder(json.JSONEncoder):
     """Helper class to convert Decimal to float for JSON serialization"""
     def default(self, obj):
-        from decimal import Decimal
         if isinstance(obj, Decimal):
             return float(obj)
         return super(DecimalEncoder, self).default(obj)
     
 def convert_floats_to_decimal(obj):
     """Recursively convert all float values to Decimal for DynamoDB"""
-    from decimal import Decimal
     if isinstance(obj, list):
         return [convert_floats_to_decimal(item) for item in obj]
     elif isinstance(obj, dict):
@@ -101,44 +69,11 @@ def convert_price_to_int(price_value):
     return 2
     
 # ----------------------------------------------------
-# api/helloECS
+# api/helloECS - Health Check
 # ----------------------------------------------------
 @api_view(["GET"])
 def hello_ecs(request):
     return Response({"status": "healthy"}, status=200)
-
-
-# ----------------------------------------------------
-# api/insertECS
-# ----------------------------------------------------
-@api_view(["POST"])
-def insert_item(request):
-    try:
-        table = dynamodb.Table(TABLE_USERS)
-        item = {
-            "userId": str(uuid.uuid4()),
-            "random_value": random.randint(1, 1000),
-        }
-        table.put_item(Item=item)
-
-        return Response({"message": "Item inserted", "item": item}, status=200)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
-
-# ----------------------------------------------------
-# api/listECS
-# ----------------------------------------------------
-@api_view(["GET"])
-def list_items(request):
-    try:
-        table = dynamodb.Table(TABLE_USERS)
-        response = table.scan()
-        return Response(response.get("Items", []), status=200)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
 
 
 # ----------------------------------------------------
@@ -199,23 +134,6 @@ def get_restaurants(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
-# ----------------------------------------------------
-# home view (sanity check)
-# ----------------------------------------------------
-
-def home(request):
-    # return render(request, "ecs_app/home.html", {})
-    try:
-        table = dynamodb.Table(TABLE_RESTAURANTS)
-        response = table.scan()
-
-        items = response.get("Items", [])
-        return JsonResponse(items, safe=False, status=200)
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-    
 
 
 # ----------------------------------------------------
@@ -363,7 +281,7 @@ def get_restaurant_detail(request, restaurant_id):
     """
     try:
         table = dynamodb.Table(TABLE_RESTAURANTS)
-        response = table.get_item(Key={"restaurantId": restaurant_id})
+        response = table.get_item(Key={"id": restaurant_id})
         
         item = response.get("Item")
         if not item:
@@ -609,6 +527,7 @@ def update_preferences(request):
       "preferences": {...},
       "firstName": "John",  // optional
       "lastName": "Doe",    // optional
+      "email": "john@example.com",  // optional
       "bio": "..."          // optional
     }
     """
@@ -617,11 +536,32 @@ def update_preferences(request):
         preferences = request.data.get("preferences", {})
         first_name = request.data.get("firstName")
         last_name = request.data.get("lastName")
+        email = request.data.get("email")
         bio = request.data.get("bio")
         
         if not user_id:
             return Response({"error": "userId required"}, status=400)
         
+        # Validate email format if provided
+        if email is not None:
+            import re
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                return Response({"error": "Invalid email format"}, status=400)
+            
+            # Check if email is already taken by another user
+            table = dynamodb.Table(TABLE_USERS)
+            scan_response = table.scan(
+                FilterExpression="email = :email AND userId <> :userId",
+                ExpressionAttributeValues={
+                    ":email": email,
+                    ":userId": user_id
+                }
+            )
+            if scan_response.get("Items"):
+                return Response({"error": "Email already in use"}, status=400)
+        
+        """
         # Convert floats to Decimal for DynamoDB
         from decimal import Decimal
         def to_decimal(obj):
@@ -632,8 +572,9 @@ def update_preferences(request):
             elif isinstance(obj, float):
                 return Decimal(str(obj))
             return obj
+        """
         
-        preferences = to_decimal(preferences)
+        preferences = convert_floats_to_decimal(preferences)
         
         # Build update expression dynamically
         from datetime import datetime, timezone
@@ -653,6 +594,10 @@ def update_preferences(request):
         if last_name is not None:
             update_expr += ", lastName = :lastName"
             expr_values[":lastName"] = last_name
+        
+        if email is not None:
+            update_expr += ", email = :email"
+            expr_values[":email"] = email
         
         if bio is not None:
             update_expr += ", bio = :bio"
@@ -700,6 +645,67 @@ def get_profile(request, user_id):
         return Response({"error": str(e)}, status=500)
 
 
+@api_view(["POST"])
+def change_password(request):
+    """
+    POST /api/auth/change-password
+    Body: { 
+      "userId": "user_001",
+      "currentPassword": "oldpass123",
+      "newPassword": "newpass123"
+    }
+    """
+    try:
+        user_id = request.data.get("userId")
+        current_password = request.data.get("currentPassword")
+        new_password = request.data.get("newPassword")
+        
+        if not user_id or not current_password or not new_password:
+            return Response({"error": "userId, currentPassword, and newPassword required"}, status=400)
+        
+        if len(new_password) < 8:
+            return Response({"error": "New password must be at least 8 characters"}, status=400)
+        
+        # Get user from DynamoDB
+        table = dynamodb.Table(TABLE_USERS)
+        response = table.get_item(Key={"userId": user_id})
+        
+        user = response.get("Item")
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+        
+        # Verify current password
+        stored_password = user.get("password", "")
+        if isinstance(stored_password, str) and stored_password.startswith("$2b$"):
+            # Hashed password
+            if not bcrypt.checkpw(current_password.encode('utf-8'), stored_password.encode('utf-8')):
+                return Response({"error": "Current password is incorrect"}, status=401)
+        else:
+            # Legacy plain text
+            if stored_password != current_password:
+                return Response({"error": "Current password is incorrect"}, status=401)
+        
+        # Hash and update to new password
+        from datetime import datetime, timezone
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        table.update_item(
+            Key={"userId": user_id},
+            UpdateExpression="SET password = :pwd, updatedAt = :updated",
+            ExpressionAttributeValues={
+                ":pwd": hashed_password,
+                ":updated": datetime.now(timezone.utc).isoformat()
+            }
+        )
+        
+        return Response({"message": "Password changed successfully"}, status=200)
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+
 # ============================================================
 # RESERVATION ENDPOINTS
 # ============================================================
@@ -742,8 +748,6 @@ def create_hold(request):
     Body: { "userId": "user_001", "restaurantId": "rest1", "date": "2025-11-25", "time": "19:00", "partySize": 4 }
     """
     try:
-        from datetime import datetime, timedelta
-        
         user_id = request.data.get("userId")
         restaurant_id = request.data.get("restaurantId")
         date = request.data.get("date")
@@ -788,9 +792,7 @@ def get_active_hold(request):
     """
     GET /api/reservations/hold/active?userId=user_001
     """
-    try:
-        from datetime import datetime
-        
+    try:       
         user_id = request.GET.get("userId")
         
         if not user_id:
@@ -843,9 +845,7 @@ def confirm_reservation(request):
     POST /api/reservations/confirm
     Body: { "holdId": "hold_123", "userId": "user_001", "paymentMethod": "card_..." }
     """
-    try:
-        from datetime import datetime
-        
+    try:     
         hold_id = request.data.get("holdId")
         user_id = request.data.get("userId")
         payment_method = request.data.get("paymentMethod")
@@ -877,6 +877,13 @@ def confirm_reservation(request):
             "specialRequests": special_requests,
             "createdAt": datetime.utcnow().isoformat()
         }
+
+        try:
+            table = dynamodb.Table(TABLE_RESERVATIONS)
+            table.put_item(Item=reservation)
+            print(f"Created reservation: {reservation_id} for user: {user_id}")
+        except Exception as e:
+            print(f"Error saving reservation to DynamoDB: {e}")
         
         return Response({
             "success": True,
@@ -892,36 +899,91 @@ def get_user_reservations(request, user_id):
     """
     GET /api/reservations/user/:userId?filter=upcoming|past|all
     """
-    try:
-        from datetime import date
+    try:       
         filter_type = request.GET.get('filter', 'upcoming')
+        
+        if not user_id:
+            return Response({"error": "userId required"}, status=400)
         
         reservations_table = dynamodb.Table(TABLE_RESERVATIONS)
         
-        # Query using GSI: UserReservations (userId, date)
+        # Query using GSI
         today = date.today().isoformat()
         
-        response = reservations_table.query(
-            IndexName='UserReservations',
-            KeyConditionExpression='userId = :uid',
-            ExpressionAttributeValues={':uid': user_id}
-        )
+        try:
+            # Use scan instead of query since GSI may not exist in local DynamoDB
+            response = reservations_table.scan(
+                FilterExpression='userId = :uid',
+                ExpressionAttributeValues={':uid': user_id}
+            )
+            reservations = response.get('Items', [])
+            print(f"Found {len(reservations)} reservations for user {user_id}")
+            
+            # Enrich with restaurant details from Yelp
+            YELP_API_KEY = "jR1H2t_k7N0ccSBaAi5ukGt3LnysoxqvLe6V4zF0zNfXtFFgyNf4o9sIsIakY-zB9gODNFf9TnPpKRSNB-DYU2zGom0F_DNDEZvGTAqIeNDqwc9tB6p4AyyjuaYdaXYx"
+            
+            for reservation in reservations:
+                restaurant_id = reservation.get('restaurantId')
+                if restaurant_id and not restaurant_id.startswith('test_'):
+                    try:
+                        # Fetch from Yelp API
+                        headers = {'Authorization': f'Bearer {YELP_API_KEY}'}
+                        response = requests.get(
+                            f'https://api.yelp.com/v3/businesses/{restaurant_id}',
+                            headers=headers,
+                            timeout=3
+                        )
+                        if response.status_code == 200:
+                            restaurant = response.json()
+                            reservation['restaurantName'] = restaurant.get('name', restaurant_id)
+                            reservation['restaurantImage'] = restaurant.get('image_url', '')
+                            reservation['restaurantCuisine'] = [cat['title'] for cat in restaurant.get('categories', [])]
+                            location = restaurant.get('location', {})
+                            address_parts = location.get('display_address', [])
+                            reservation['restaurantAddress'] = ', '.join(address_parts) if address_parts else ''
+                            reservation['restaurantRating'] = restaurant.get('rating', 0)
+                            print(f"Enriched reservation with restaurant: {restaurant.get('name')}")
+                        else:
+                            print(f"Yelp API returned {response.status_code} for {restaurant_id}")
+                    except Exception as e:
+                        print(f"Could not fetch restaurant {restaurant_id}: {e}")
+                        reservation['restaurantName'] = restaurant_id
+                        reservation['restaurantCuisine'] = []
+        except Exception as e:
+            print(f"DynamoDB scan error: {e}")
+            reservations = []
         
-        reservations = response.get('Items', [])
-        
-        # Filter by date/status
         if filter_type == 'upcoming':
-            reservations = [r for r in reservations if r.get('date', '') >= today and r.get('status') != 'cancelled']
+            reservations = [
+                r for r in reservations 
+                if r.get('date', '') >= today and r.get('status') != 'cancelled'
+            ]
         elif filter_type == 'past':
-            reservations = [r for r in reservations if r.get('date', '') < today or r.get('status') in ['completed', 'cancelled', 'no-show']]
+            reservations = [
+                r for r in reservations 
+                if r.get('date', '') < today or r.get('status') == 'cancelled'
+            ]
+        # filter_type == 'all' falls through here with no filtering
+        
+        # Sort by date
+        if filter_type == 'upcoming':
+            reservations.sort(key=lambda x: x.get('date', '') + x.get('time', ''))
+        else:
+            # Past reservations: most recent first
+            reservations.sort(key=lambda x: x.get('date', '') + x.get('time', ''), reverse=True)
         
         # Convert Decimals to JSON-safe format
-        import json
-        return JsonResponse(json.loads(json.dumps(reservations, cls=DecimalEncoder)), safe=False)
+        reservations_json = json.loads(json.dumps(reservations, cls=DecimalEncoder))
+        
+        return Response({
+            "reservations": reservations_json,
+            "count": len(reservations_json),
+            "filter": filter_type
+        }, status=200)
         
     except Exception as e:
-        print(f"Error fetching reservations: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["GET"])
@@ -932,10 +994,36 @@ def get_reservation(request, reservation_id):
     try:
         user_id = request.GET.get("userId")
         
-        # In production, fetch from DynamoDB
-        return Response({"error": "Reservation not found"}, status=404)
+        if not reservation_id:
+            return Response({"error": "reservationId required"}, status=400)
+        
+        reservations_table = dynamodb.Table(TABLE_RESERVATIONS)
+        
+        try:
+            response = reservations_table.get_item(
+                Key={"reservationId": reservation_id}
+            )
+            
+            reservation = response.get("Item")
+            
+            if not reservation:
+                return Response({"error": "Reservation not found"}, status=404)
+            
+            # Verify user owns this reservation
+            if user_id and reservation.get("userId") != user_id:
+                return Response({"error": "Unauthorized"}, status=403)
+            
+            # Convert Decimals to JSON-safe format
+            reservation_json = json.loads(json.dumps(reservation, cls=DecimalEncoder))
+            
+            return Response(reservation_json, status=200)
+            
+        except Exception as e:
+            print(f"DynamoDB get_item error: {e}")
+            return Response({"error": "Reservation not found"}, status=404)
         
     except Exception as e:
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
 
@@ -945,11 +1033,130 @@ def modify_reservation(request, reservation_id):
     PATCH /api/reservations/:id
     Body: { "userId": "user_001", "date": "2025-11-26", ... }
     """
-    try:
-        # In production, update in DynamoDB
-        return Response({"error": "Not implemented"}, status=501)
+    try:        
+        user_id = request.data.get("userId")
+        new_date = request.data.get("date")
+        new_time = request.data.get("time")
+        new_party_size = request.data.get("partySize")
+        new_special_requests = request.data.get("specialRequests")
+        
+        if not reservation_id:
+            return Response({"error": "reservationId required"}, status=400)
+        
+        if not user_id:
+            return Response({"error": "userId required for authorization"}, status=400)
+        
+        reservations_table = dynamodb.Table(TABLE_RESERVATIONS)
+        
+        # Get existing reservation
+        try:
+            response = reservations_table.get_item(
+                Key={"reservationId": reservation_id}
+            )
+            reservation = response.get("Item")
+            
+            if not reservation:
+                return Response({"error": "Reservation not found"}, status=404)
+            
+            # Verify user owns this reservation
+            if reservation.get("userId") != user_id:
+                return Response({"error": "Unauthorized"}, status=403)
+            
+            # Only allow modifications if reservation is confirmed and not in the past
+            if reservation.get("status") != "confirmed":
+                return Response({
+                    "error": "Can only modify confirmed reservations"
+                }, status=400)
+            
+            # Check if reservation date is in the past
+            reservation_date_str = reservation.get("date", "")
+            if reservation_date_str:
+                try:
+                    reservation_date = datetime.strptime(reservation_date_str, "%Y-%m-%d").date()
+                    if reservation_date < date.today():
+                        return Response({
+                            "error": "Cannot modify past reservations"
+                        }, status=400)
+                except:
+                    pass
+            
+        except Exception as e:
+            print(f"DynamoDB get_item error: {e}")
+            return Response({"error": "Reservation not found"}, status=404)
+        
+        # Build update expression dynamically
+        update_expr = "SET updatedAt = :updatedAt"
+        expr_values = {":updatedAt": datetime.utcnow().isoformat() + "Z"}
+        expr_names = {}
+        
+        # Update date (also update the GSI sort key)
+        if new_date is not None:
+            update_expr += ", #date = :date"
+            expr_names["#date"] = "date"
+            expr_values[":date"] = new_date
+        
+        # Update time
+        if new_time is not None:
+            update_expr += ", #time = :time"
+            expr_names["#time"] = "time"
+            expr_values[":time"] = new_time
+        
+        # Update party size and recalculate deposit
+        if new_party_size is not None:
+            try:
+                new_party_size_int = int(new_party_size)
+                if new_party_size_int < 1 or new_party_size_int > 20:
+                    return Response({
+                        "error": "Party size must be between 1 and 20"
+                    }, status=400)
+                
+                # Recalculate deposit ($25 per person)
+                deposit_per_person = 25
+                new_deposit = Decimal(str(deposit_per_person * new_party_size_int))
+                
+                update_expr += ", partySize = :partySize, depositAmount = :depositAmount"
+                expr_values[":partySize"] = new_party_size_int
+                expr_values[":depositAmount"] = new_deposit
+            except ValueError:
+                return Response({"error": "Invalid partySize"}, status=400)
+        
+        # Update special requests
+        if new_special_requests is not None:
+            update_expr += ", specialRequests = :specialRequests"
+            expr_values[":specialRequests"] = str(new_special_requests)
+        
+        # Only update if there are changes
+        if len(expr_values) == 1:  # Only updatedAt
+            return Response({
+                "error": "No fields to update"
+            }, status=400)
+        
+        # Update reservation in DynamoDB
+        try:
+            update_response = reservations_table.update_item(
+                Key={"reservationId": reservation_id},
+                UpdateExpression=update_expr,
+                ExpressionAttributeValues=expr_values,
+                ExpressionAttributeNames=expr_names if expr_names else None,
+                ReturnValues="ALL_NEW"
+            )
+            
+            updated_reservation = update_response.get("Attributes", {})
+            
+            # Convert Decimals to JSON-safe format
+            reservation_json = json.loads(json.dumps(updated_reservation, cls=DecimalEncoder))
+            
+            return Response({
+                "success": True,
+                "reservation": reservation_json
+            }, status=200)
+            
+        except Exception as e:
+            print(f"DynamoDB update_item error: {e}")
+            return Response({"error": f"Failed to update reservation: {str(e)}"}, status=500)
         
     except Exception as e:
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
 
@@ -960,15 +1167,97 @@ def cancel_reservation(request, reservation_id):
     Body: { "userId": "user_001" }
     """
     try:
-        # In production, cancel and calculate refund
+        from datetime import datetime
+        from decimal import Decimal
+        
+        user_id = request.data.get("userId")
+        
+        if not reservation_id or not user_id:
+            return Response({"error": "reservationId and userId required"}, status=400)
+        
+        reservations_table = dynamodb.Table(TABLE_RESERVATIONS)
+        
+        # Get existing reservation
+        response = reservations_table.get_item(Key={"reservationId": reservation_id})
+        reservation = response.get("Item")
+        
+        if not reservation:
+            return Response({"error": "Reservation not found"}, status=404)
+        
+        if reservation.get("userId") != user_id:
+            return Response({"error": "Unauthorized"}, status=403)
+            
+        if reservation.get("status") == "cancelled":
+            return Response({"error": "Reservation already cancelled"}, status=400)
+        
+        # Calculate refund
+        reservation_date_str = reservation.get("date", "")
+        reservation_time_str = reservation.get("time", "00:00")
+        deposit_amount = float(reservation.get("depositAmount", 0))
+        
+        try:
+            reservation_dt_str = f"{reservation_date_str}T{reservation_time_str}:00"
+            # Parse as naive datetime (assuming restaurant local time)
+            reservation_datetime = datetime.fromisoformat(reservation_dt_str)
+            
+            # Use datetime.now() to compare similar "wall clock" times
+            # Alternatively, force everything to UTC if you store timezones.
+            # Assuming 'date' stored is effectively "Local Server Time/Restaurant Time"
+            now = datetime.now() 
+            
+            time_diff = reservation_datetime - now
+            hours_until = time_diff.total_seconds() / 3600
+            
+            # Logic from README
+            if hours_until >= 24:
+                refund_percentage = 100
+            elif hours_until >= 4:
+                refund_percentage = 50
+            else:
+                refund_percentage = 0 
+                
+            # If time has already passed (negative hours), no refund
+            if hours_until < 0:
+                refund_percentage = 0
+            
+            refund_amount = deposit_amount * (refund_percentage / 100)
+            
+        except Exception as e:
+            print(f"Error calculating refund: {e}")
+            refund_percentage = 0
+            refund_amount = 0
+            hours_until = 0
+        
+        # Update DynamoDB
+        update_response = reservations_table.update_item(
+            Key={"reservationId": reservation_id},
+            UpdateExpression="SET #status = :status, cancelledAt = :cancelledAt, refundAmount = :refundAmount, refundPercentage = :refundPercentage, updatedAt = :updatedAt",
+            ExpressionAttributeNames={"#status": "status"},
+            ExpressionAttributeValues={
+                ":status": "cancelled",
+                ":cancelledAt": datetime.utcnow().isoformat() + "Z", # Metadata can stay UTC
+                ":refundAmount": Decimal(str(refund_amount)),
+                ":refundPercentage": Decimal(str(refund_percentage)),
+                ":updatedAt": datetime.utcnow().isoformat() + "Z"
+            },
+            ReturnValues="ALL_NEW"
+        )
+        
+        updated_reservation = json.loads(json.dumps(update_response.get("Attributes", {}), cls=DecimalEncoder))
+        
         return Response({
             "success": True,
             "message": "Reservation cancelled",
-            "refundAmount": 75,
-            "refundPercentage": 75
+            "reservation": updated_reservation,
+            "refund": {
+                "amount": refund_amount,
+                "percentage": refund_percentage,
+                "hoursUntilReservation": round(hours_until, 2)
+            }
         }, status=200)
         
     except Exception as e:
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
 
@@ -1041,7 +1330,6 @@ def favorites_handler(request):
             }, status=201)
             
         except Exception as e:
-            import traceback
             traceback.print_exc()
             return Response({"error": str(e)}, status=500)
     
@@ -1071,7 +1359,6 @@ def favorites_handler(request):
             }, status=200)
             
         except Exception as e:
-            import traceback
             traceback.print_exc()
             return Response({"error": str(e)}, status=500)
 
@@ -1141,7 +1428,6 @@ def add_favorite(request):
         }, status=201)
         
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
@@ -1172,7 +1458,6 @@ def get_favorites(request, user_id):
         return Response(favorites, status=200)
         
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
@@ -1199,7 +1484,7 @@ def remove_favorite(request):
             }
         )
         
-        print(f"✅ Removed favorite: {user_id} -> {restaurant_id}")
+        print(f"Removed favorite: {user_id} -> {restaurant_id}")
         
         return Response({
             "success": True,
@@ -1207,7 +1492,6 @@ def remove_favorite(request):
         }, status=200)
         
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 

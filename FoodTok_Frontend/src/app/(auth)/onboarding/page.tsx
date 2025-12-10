@@ -60,9 +60,9 @@ export default function OnboardingPage() {
     priceRange: '$$' as PriceRange,
     maxDistance: 10,
     location: {
-      latitude: 0,
-      longitude: 0,
-      address: ''
+      latitude: 40.693957,
+      longitude: -73.986525,
+      address: '6 Metrotech Center, Brooklyn, NY, 11201'
     }
   });
   const [locationGranted, setLocationGranted] = useState(false);

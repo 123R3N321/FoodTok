@@ -98,7 +98,7 @@ export default function RestaurantCard({
       }}
     >
       <Card 
-        className="h-full overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl relative border-0"
+        className="h-full overflow-hidden bg-card shadow-2xl relative border-0"
       >
         {/* Swipe indicators - must be BEFORE clickable overlay and non-interactive */}
         <motion.div
@@ -149,7 +149,7 @@ export default function RestaurantCard({
         {/* Restaurant image */}
         <div className="relative h-64 overflow-hidden">
           <Image
-            src={restaurant.images[0]}
+            src={restaurant.images[0] || '/placeholder-restaurant.jpg'}
             alt={restaurant.name}
             fill
             className="object-cover"
@@ -173,7 +173,7 @@ export default function RestaurantCard({
           </div>
         </div>
 
-        <CardContent className="p-4 space-y-3 bg-gradient-to-b from-gray-900 to-black relative z-20">
+        <CardContent className="p-4 space-y-3 bg-gradient-to-b from-card to-background relative z-20">
           {/* Restaurant description */}
           <p className="text-gray-300 text-sm line-clamp-2 leading-relaxed font-medium">
             {restaurant.description}

@@ -49,7 +49,7 @@ services:
   ecs-app:
     build:
       context: ./ecs_app               
-      dockerfile: Dockerfile.ecs       
+      dockerfile: Dockerfile.backend
     container_name: ecs-app
     environment:
       - IS_LOCAL=true
@@ -58,36 +58,8 @@ services:
       - AWS_REGION=us-east-1
       - DDB_USERS_TABLE=Users
       - DDB_RESTAURANTS_TABLE=Restaurants
-      - DDB_RESERVATIONS_TABLE=Reservations
-      - DDB_USER_PREFERENCES_TABLE=UserPreferences
-      - DDB_USER_FAVORITE_CUISINES_TABLE=UserFavoriteCuisines
-      - DDB_CHAINSTORES_TABLE=ChainStores
-      - DDB_RESTAURANT_HOURS_TABLE=RestaurantHours
-      - DDB_RESTAURANT_SPECIAL_HOURS_TABLE=RestaurantSpecialHours
-      - DDB_CUISINES_TABLE=Cuisines
-      - DDB_RESTAURANT_CUISINES_TABLE=RestaurantCuisines
-      - DDB_AMENITIES_TABLE=Amenities
-      - DDB_RESTAURANT_AMENITIES_TABLE=RestaurantAmenities
-      - DDB_RESTAURANT_IMAGES_TABLE=RestaurantImages
-      - DDB_DINING_TABLES_TABLE=DiningTables
-      - DDB_TABLE_AVAILABILITY_TABLE=TableAvailability
-      - DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE=TableAvailabilityOverrides
-      - DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE=TableAvailabilitySnapshots
-      - DDB_RESERVATION_TABLES_TABLE=ReservationTables
-      - DDB_RESERVATION_HISTORY_TABLE=ReservationHistory
-      - DDB_WAITLIST_ENTRIES_TABLE=WaitlistEntries
-      - DDB_REVIEWS_TABLE=Reviews
-      - DDB_REVIEW_IMAGES_TABLE=ReviewImages
-      - DDB_REVIEW_RESPONSES_TABLE=ReviewResponses
-      - DDB_REVIEW_HELPFUL_VOTES_TABLE=ReviewHelpfulVotes
       - DDB_FAVORITES_TABLE=Favorites
-      - DDB_RECOMMENDATION_SCORES_TABLE=RecommendationScores
-      - DDB_USER_INTERACTIONS_TABLE=UserInteractions
-      - DDB_NOTIFICATIONS_TABLE=Notifications
-      - DDB_ADMINS_TABLE=Admins
-      - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
-      - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
-      - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_RESERVATIONS_TABLE=Reservations
       - DDB_USER_STATS_TABLE=UserStats
       - DDB_HOLDS_TABLE=Holds
       - S3_IMAGES_BUCKET=foodtok-local-images
@@ -110,11 +82,6 @@ services:
       context: ./ecs_app/local_build
       dockerfile: Dockerfile.local_config
     container_name: local_config
-    depends_on:
-      dynamo:
-        condition: service_healthy
-      localstack:
-        condition: service_healthy
     environment:
       - IS_LOCAL=true
       - AWS_ACCESS_KEY_ID=test
@@ -122,36 +89,8 @@ services:
       - AWS_REGION=us-east-1
       - DDB_USERS_TABLE=Users
       - DDB_RESTAURANTS_TABLE=Restaurants
-      - DDB_RESERVATIONS_TABLE=Reservations
-      - DDB_USER_PREFERENCES_TABLE=UserPreferences
-      - DDB_USER_FAVORITE_CUISINES_TABLE=UserFavoriteCuisines
-      - DDB_CHAINSTORES_TABLE=ChainStores
-      - DDB_RESTAURANT_HOURS_TABLE=RestaurantHours
-      - DDB_RESTAURANT_SPECIAL_HOURS_TABLE=RestaurantSpecialHours
-      - DDB_CUISINES_TABLE=Cuisines
-      - DDB_RESTAURANT_CUISINES_TABLE=RestaurantCuisines
-      - DDB_AMENITIES_TABLE=Amenities
-      - DDB_RESTAURANT_AMENITIES_TABLE=RestaurantAmenities
-      - DDB_RESTAURANT_IMAGES_TABLE=RestaurantImages
-      - DDB_DINING_TABLES_TABLE=DiningTables
-      - DDB_TABLE_AVAILABILITY_TABLE=TableAvailability
-      - DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE=TableAvailabilityOverrides
-      - DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE=TableAvailabilitySnapshots
-      - DDB_RESERVATION_TABLES_TABLE=ReservationTables
-      - DDB_RESERVATION_HISTORY_TABLE=ReservationHistory
-      - DDB_WAITLIST_ENTRIES_TABLE=WaitlistEntries
-      - DDB_REVIEWS_TABLE=Reviews
-      - DDB_REVIEW_IMAGES_TABLE=ReviewImages
-      - DDB_REVIEW_RESPONSES_TABLE=ReviewResponses
-      - DDB_REVIEW_HELPFUL_VOTES_TABLE=ReviewHelpfulVotes
       - DDB_FAVORITES_TABLE=Favorites
-      - DDB_RECOMMENDATION_SCORES_TABLE=RecommendationScores
-      - DDB_USER_INTERACTIONS_TABLE=UserInteractions
-      - DDB_NOTIFICATIONS_TABLE=Notifications
-      - DDB_ADMINS_TABLE=Admins
-      - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
-      - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
-      - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
+      - DDB_RESERVATIONS_TABLE=Reservations
       - DDB_USER_STATS_TABLE=UserStats
       - DDB_HOLDS_TABLE=Holds
       - S3_IMAGES_BUCKET=foodtok-local-images
@@ -159,63 +98,29 @@ services:
       - LOCAL_S3_ENDPOINT=http://localstack:4566
       - DJANGO_SETTINGS_MODULE=ecs_project.settings
     command: ["python", "/app/local_build/local_config.py"]
-    networks:
-      - localstack-net
-
-  local_seed:
-    build:
-      context: ./ecs_app/local_build
-      dockerfile: Dockerfile.seed
-    container_name: local_seed
-    environment:
-      - IS_LOCAL=true
-      - AWS_REGION=us-east-1
-      - DDB_USERS_TABLE=Users
-      - DDB_RESTAURANTS_TABLE=Restaurants
-      - DDB_RESERVATIONS_TABLE=Reservations
-      - DDB_USER_PREFERENCES_TABLE=UserPreferences
-      - DDB_USER_FAVORITE_CUISINES_TABLE=UserFavoriteCuisines
-      - DDB_CHAINSTORES_TABLE=ChainStores
-      - DDB_RESTAURANT_HOURS_TABLE=RestaurantHours
-      - DDB_RESTAURANT_SPECIAL_HOURS_TABLE=RestaurantSpecialHours
-      - DDB_CUISINES_TABLE=Cuisines
-      - DDB_RESTAURANT_CUISINES_TABLE=RestaurantCuisines
-      - DDB_AMENITIES_TABLE=Amenities
-      - DDB_RESTAURANT_AMENITIES_TABLE=RestaurantAmenities
-      - DDB_RESTAURANT_IMAGES_TABLE=RestaurantImages
-      - DDB_DINING_TABLES_TABLE=DiningTables
-      - DDB_TABLE_AVAILABILITY_TABLE=TableAvailability
-      - DDB_TABLE_AVAILABILITY_OVERRIDES_TABLE=TableAvailabilityOverrides
-      - DDB_TABLE_AVAILABILITY_SNAPSHOTS_TABLE=TableAvailabilitySnapshots
-      - DDB_RESERVATION_TABLES_TABLE=ReservationTables
-      - DDB_RESERVATION_HISTORY_TABLE=ReservationHistory
-      - DDB_WAITLIST_ENTRIES_TABLE=WaitlistEntries
-      - DDB_REVIEWS_TABLE=Reviews
-      - DDB_REVIEW_IMAGES_TABLE=ReviewImages
-      - DDB_REVIEW_RESPONSES_TABLE=ReviewResponses
-      - DDB_REVIEW_HELPFUL_VOTES_TABLE=ReviewHelpfulVotes
-      - DDB_FAVORITES_TABLE=Favorites
-      - DDB_RECOMMENDATION_SCORES_TABLE=RecommendationScores
-      - DDB_USER_INTERACTIONS_TABLE=UserInteractions
-      - DDB_NOTIFICATIONS_TABLE=Notifications
-      - DDB_ADMINS_TABLE=Admins
-      - DDB_ADMIN_ACTIVITY_LOGS_TABLE=AdminActivityLogs
-      - DDB_USER_NO_SHOW_RECORDS_TABLE=UserNoShowRecords
-      - DDB_SYSTEM_SETTINGS_TABLE=SystemSettings
-      - DDB_USER_STATS_TABLE=UserStats
-      - DDB_HOLDS_TABLE=Holds
-      - S3_IMAGES_BUCKET=foodtok-local-images
-      - LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000
-      - LOCAL_S3_ENDPOINT=http://localstack:4566
-    volumes:
-      - ./seed_data:/app/seed_data
-    command: ["python", "/app/local_build/seed_data.py"] 
     depends_on:
-      local_config:
-        condition: service_completed_successfully
       dynamo:
         condition: service_healthy
       localstack:
+        condition: service_healthy
+    networks:
+      - localstack-net
+
+  # -----------------------------
+  # DynamoDB Admin GUI
+  # -----------------------------
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    container_name: dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamo:8000
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+    depends_on:
+      dynamo:
         condition: service_healthy
     networks:
       - localstack-net

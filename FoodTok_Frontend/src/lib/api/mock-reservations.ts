@@ -21,6 +21,7 @@ import {
   ConfirmReservationRequest,
   ModifyReservationRequest,
   ReservationListItem,
+  OrderHistoryItem,
   PaymentMethod,
 } from '@/types/reservation';
 
@@ -893,6 +894,112 @@ const seedMockReservations = () => {
   MOCK_RESERVATIONS.set(mockReservation1.reservationId, mockReservation1);
   MOCK_RESERVATIONS.set(mockReservation2.reservationId, mockReservation2);
 };
+
+/**
+ * Get order/dining history (mock implementation)
+ * Returns completed and cancelled reservations
+ */
+export async function getOrderHistory(
+  userId: string,
+  filter: 'all' | 'completed' | 'cancelled' = 'all'
+): Promise<OrderHistoryItem[]> {
+  await delay(300);
+
+  // Create mock history data
+  const mockHistory: OrderHistoryItem[] = [
+    {
+      reservationId: 'res_history_001',
+      restaurantId: 'rest_003',
+      restaurantName: 'Le Bernardin',
+      restaurantImage: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800',
+      restaurantCuisine: ['French', 'Seafood', 'Fine Dining'],
+      restaurantAddress: '155 W 51st St, New York, NY 10019',
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      time: '19:30',
+      partySize: 2,
+      status: 'completed',
+      confirmationCode: 'FT-LB001',
+      depositAmount: 100,
+      totalPaid: 285.50,
+      specialRequests: 'Anniversary celebration',
+      completedAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
+    },
+    {
+      reservationId: 'res_history_002',
+      restaurantId: 'rest_004',
+      restaurantName: 'Peter Luger Steak House',
+      restaurantImage: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800',
+      restaurantCuisine: ['Steakhouse', 'American'],
+      restaurantAddress: '178 Broadway, Brooklyn, NY 11211',
+      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      time: '20:00',
+      partySize: 4,
+      status: 'completed',
+      confirmationCode: 'FT-PL002',
+      depositAmount: 200,
+      totalPaid: 542.75,
+      completedAt: Date.now() - 14 * 24 * 60 * 60 * 1000,
+    },
+    {
+      reservationId: 'res_history_003',
+      restaurantId: 'rest_005',
+      restaurantName: 'Carbone',
+      restaurantImage: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800',
+      restaurantCuisine: ['Italian', 'American'],
+      restaurantAddress: '181 Thompson St, New York, NY 10012',
+      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      time: '18:30',
+      partySize: 3,
+      status: 'cancelled',
+      confirmationCode: 'FT-CB003',
+      depositAmount: 150,
+      specialRequests: 'Business dinner',
+      cancelledAt: Date.now() - 22 * 24 * 60 * 60 * 1000,
+    },
+    {
+      reservationId: 'res_history_004',
+      restaurantId: 'rest_006',
+      restaurantName: 'Sushi Nakazawa',
+      restaurantImage: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800',
+      restaurantCuisine: ['Japanese', 'Sushi', 'Omakase'],
+      restaurantAddress: '23 Commerce St, New York, NY 10014',
+      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      time: '19:00',
+      partySize: 2,
+      status: 'completed',
+      confirmationCode: 'FT-SN004',
+      depositAmount: 120,
+      totalPaid: 420.00,
+      completedAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+    },
+    {
+      reservationId: 'res_history_005',
+      restaurantId: 'rest_007',
+      restaurantName: 'Momofuku Ko',
+      restaurantImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
+      restaurantCuisine: ['Contemporary', 'Asian Fusion'],
+      restaurantAddress: '8 Extra Pl, New York, NY 10003',
+      date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      time: '20:30',
+      partySize: 2,
+      status: 'completed',
+      confirmationCode: 'FT-MK005',
+      depositAmount: 100,
+      totalPaid: 350.25,
+      specialRequests: 'Chef\'s tasting menu',
+      completedAt: Date.now() - 45 * 24 * 60 * 60 * 1000,
+    },
+  ];
+
+  // Filter by status
+  if (filter === 'completed') {
+    return mockHistory.filter(item => item.status === 'completed');
+  } else if (filter === 'cancelled') {
+    return mockHistory.filter(item => item.status === 'cancelled' || item.status === 'no-show');
+  }
+
+  return mockHistory;
+}
 
 // Run seed on import
 seedMockReservations();

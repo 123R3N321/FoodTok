@@ -49,6 +49,19 @@ export const useDiscoveryStore = create<DiscoveryStore>((set, get) => ({
       console.log('🍽️ User cuisines:', preferences?.cuisineTypes);
       console.log('💰 User price range:', preferences?.priceRange);
       
+      // Get list of favorited restaurant IDs to exclude
+      let excludeIds: string[] = [];
+      if (userId) {
+        try {
+          const { getUserFavorites } = await import('../api');
+          const favorites = await getUserFavorites(userId);
+          excludeIds = favorites.map(f => f.restaurantId);
+          console.log('🚫 Excluding', excludeIds.length, 'favorited restaurants from queue');
+        } catch (e) {
+          console.warn('Could not fetch favorites for exclusion:', e);
+        }
+      }
+      
       const response = await getDiscoveryRestaurants(
         userId || 'default',
         20, // Increased from 10 to 20 for more variety
@@ -59,8 +72,12 @@ export const useDiscoveryStore = create<DiscoveryStore>((set, get) => ({
       console.log('🎯 First restaurant:', response[0]?.restaurant?.name);
       console.log('📊 Match scores:', response.slice(0, 5).map(c => ({ name: c.restaurant.name, score: c.matchScore })));
       
+      // Filter out already favorited restaurants
+      const filteredQueue = response.filter(card => !excludeIds.includes(card.restaurant.id));
+      console.log('✨ Filtered queue:', filteredQueue.length, 'restaurants (removed', response.length - filteredQueue.length, 'favorites)');
+      
       set({
-        queue: response as any,
+        queue: filteredQueue as any,
         currentIndex: 0,
         isLoading: false,
         error: null

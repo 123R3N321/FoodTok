@@ -5,38 +5,48 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Users, MapPin, ChevronRight, X, Edit } from 'lucide-react';
 import { getUserReservations, cancelReservation } from '@/lib/api';
+import { useAuthStore } from '@/lib/stores';
 import type { ReservationListItem } from '@/types/reservation';
 
 export default function ReservationsPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [reservations, setReservations] = useState<ReservationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user?.id) {
+      router.push('/login');
+      return;
+    }
     loadReservations();
-  }, [filter]);
+  }, [filter, user?.id]);
 
   const loadReservations = async () => {
+    if (!user?.id) return;
+    
     setLoading(true);
     try {
-      const data = await getUserReservations('current_user', filter);
+      const data = await getUserReservations(user.id, filter);
       setReservations(data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load reservations:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = async (reservationId: string) => {
+    if (!user?.id) return;
+    
     const confirmed = confirm('Are you sure you want to cancel this reservation? Refund depends on cancellation policy.');
     if (!confirmed) return;
 
     setCancellingId(reservationId);
     try {
-      const result = await cancelReservation(reservationId, 'current_user');
+      const result = await cancelReservation(reservationId, user.id);
       alert(result.message);
       loadReservations();
     } catch (err: any) {
@@ -70,9 +80,9 @@ export default function ReservationsPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setFilter('upcoming')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === 'upcoming'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -80,9 +90,9 @@ export default function ReservationsPage() {
           </button>
           <button
             onClick={() => setFilter('past')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === 'past'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
@@ -112,7 +122,7 @@ export default function ReservationsPage() {
             {filter === 'upcoming' && (
               <button
                 onClick={() => router.push('/')}
-                className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90"
+                className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Explore Restaurants
               </button>
@@ -128,15 +138,20 @@ export default function ReservationsPage() {
                 key={reservation.reservationId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-card rounded-2xl shadow-lg overflow-hidden border"
+                className={`bg-card rounded-2xl shadow-lg overflow-hidden border transition-all ${
+                  filter === 'past' ? 'opacity-70 scale-95' : ''
+                }`}
               >
                 <div className="flex flex-col md:flex-row">
                   {/* Restaurant Image */}
-                  <div className="md:w-48 h-48 md:h-auto flex-shrink-0">
+                  <div className="md:w-48 h-48 md:h-auto flex-shrink-0 bg-muted">
                     <img
-                      src={reservation.restaurantImage}
-                      alt={reservation.restaurantName}
+                      src={reservation.restaurantImage || '/placeholder-restaurant.jpg'}
+                      alt={reservation.restaurantName || 'Restaurant'}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400';
+                      }}
                     />
                   </div>
 
@@ -145,10 +160,10 @@ export default function ReservationsPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-xl font-bold mb-1">
-                          {reservation.restaurantName}
+                          {reservation.restaurantName || 'Restaurant'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {reservation.restaurantCuisine.join(', ')}
+                          {reservation.restaurantCuisine?.join(', ') || 'Cuisine not specified'}
                         </p>
                       </div>
                       <span
@@ -162,11 +177,11 @@ export default function ReservationsPage() {
 
                     {/* Confirmation Code (for upcoming) */}
                     {filter === 'upcoming' && ['confirmed', 'modified'].includes(reservation.status) && (
-                      <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20">
-                        <div className="text-xs text-primary font-semibold mb-1">
+                      <div className="mb-4 p-3 bg-orange-500/10 rounded-xl border border-orange-500/20">
+                        <div className="text-xs text-orange-500 font-semibold mb-1">
                           CONFIRMATION CODE
                         </div>
-                        <div className="text-2xl font-bold text-primary font-mono">
+                        <div className="text-2xl font-bold text-orange-500 font-mono">
                           {reservation.confirmationCode}
                         </div>
                       </div>
@@ -175,7 +190,7 @@ export default function ReservationsPage() {
                     {/* Info Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar size={16} className="text-primary" />
+                        <Calendar size={16} className="text-orange-500" />
                         <span>
                           {new Date(reservation.date).toLocaleDateString('en-US', {
                             weekday: 'short',
@@ -185,11 +200,11 @@ export default function ReservationsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock size={16} className="text-primary" />
+                        <Clock size={16} className="text-orange-500" />
                         <span>{reservation.time}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Users size={16} className="text-primary" />
+                        <Users size={16} className="text-orange-500" />
                         <span>{reservation.partySize} guests</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
@@ -216,7 +231,10 @@ export default function ReservationsPage() {
                             'Cancel'
                           )}
                         </button>
-                        <button className="flex-1 py-2 px-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90">
+                        <button 
+                          onClick={() => router.push(`/restaurant/${reservation.restaurantId}`)}
+                          className="flex-1 py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
                           View Details
                         </button>
                       </div>

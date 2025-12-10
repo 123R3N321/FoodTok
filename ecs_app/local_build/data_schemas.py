@@ -8,39 +8,13 @@ from typing import List, Optional
 class DynamoTables(Enum):
     USERS = "Users"
     RESTAURANTS = "Restaurants"
-    RESERVATIONS = "Reservations"
-    USER_PREFERENCES = "UserPreferences"
-    USER_FAVORITE_CUISINES = "UserFavoriteCuisines"
-    CHAINSTORES = "ChainStores"
-    RESTAURANT_HOURS = "RestaurantHours"
-    RESTAURANT_SPECIAL_HOURS = "RestaurantSpecialHours"
-    CUISINES = "Cuisines"
-    RESTAURANT_CUISINES = "RestaurantCuisines"
-    AMENITIES = "Amenities"
-    RESTAURANT_AMENITIES = "RestaurantAmenities"
-    RESTAURANT_IMAGES = "RestaurantImages"
-    DINING_TABLES = "DiningTables"
-    TABLE_AVAILABILITY = "TableAvailability"
-    TABLE_AVAILABILITY_OVERRIDES = "TableAvailabilityOverrides"
-    TABLE_AVAILABILITY_SNAPSHOTS = "TableAvailabilitySnapshots"
-    RESERVATION_TABLES = "ReservationTables"
-    RESERVATION_HISTORY = "ReservationHistory"
-    WAITLIST_ENTRIES = "WaitlistEntries"
-    REVIEWS = "Reviews"
-    REVIEW_IMAGES = "ReviewImages"
-    REVIEW_RESPONSES = "ReviewResponses"
-    REVIEW_HELPFUL_VOTES = "ReviewHelpfulVotes"
     FAVORITES = "Favorites"
-    RECOMMENDATION_SCORES = "RecommendationScores"
-    USER_INTERACTIONS = "UserInteractions"
-    NOTIFICATIONS = "Notifications"
-    ADMINS = "Admins"
-    ADMIN_ACTIVITY_LOGS = "AdminActivityLogs"
-    USER_NO_SHOW_RECORDS = "UserNoShowRecords"
-    SYSTEM_SETTINGS = "SystemSettings"
+    RESERVATIONS = "Reservations"
     USER_STATS = "UserStats"
     HOLDS = "Holds"
+    
 
+# TODO: Update data classes to only include tables above
 # ==========================================================
 # TABLE DATA CLASSES
 # ==========================================================

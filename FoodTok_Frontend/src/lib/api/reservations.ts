@@ -24,6 +24,7 @@ import {
   ConfirmReservationRequest,
   ModifyReservationRequest,
   ReservationListItem,
+  OrderHistoryItem,
   Hold,
   Reservation,
 } from '@/types/reservation';
@@ -123,7 +124,10 @@ export async function getUserReservations(
   filter: 'upcoming' | 'past' = 'upcoming'
 ): Promise<ReservationListItem[]> {
   try {
-    return await apiRequest(`/reservations/user/${userId}?filter=${filter}`);
+    const response = await apiRequest<any>(`/reservations/user/${userId}?filter=${filter}`);
+    // Backend returns {reservations: [], count: N, filter: 'upcoming'}
+    // Extract just the reservations array
+    return response.reservations || response || [];
   } catch (error) {
     console.error('Error fetching user reservations:', error);
     throw error;
@@ -168,7 +172,7 @@ export async function modifyReservation(
 
 /**
  * Cancel reservation with refund calculation
- * DELETE /api/reservations/:id
+ * DELETE /api/reservations/:id/cancel
  */
 export async function cancelReservation(
   reservationId: string,
@@ -180,12 +184,43 @@ export async function cancelReservation(
   refundPercentage: number;
 }> {
   try {
-    return await apiRequest(`/reservations/${reservationId}`, {
+    return await apiRequest(`/reservations/${reservationId}/cancel`, {
       method: 'DELETE',
       body: JSON.stringify({ userId }),
     });
   } catch (error) {
     console.error('Error canceling reservation:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get order/dining history (completed and cancelled reservations)
+ * GET /api/reservations/user/:userId?filter=past
+ * This is different from getUserReservations - it's specifically for history page
+ */
+export async function getOrderHistory(
+  userId: string,
+  filter: 'all' | 'completed' | 'cancelled' = 'all'
+): Promise<OrderHistoryItem[]> {
+  try {
+    // Use the past filter to get historical reservations
+    const response = await apiRequest<any>(`/reservations/user/${userId}?filter=past`);
+    // Backend returns {reservations: [], count: N, filter: 'past'}
+    const data = response.reservations || response || [];
+    
+    // Filter by status if needed
+    if (filter === 'completed') {
+      return data.filter((item: OrderHistoryItem) => item.status === 'completed');
+    } else if (filter === 'cancelled') {
+      return data.filter((item: OrderHistoryItem) => 
+        item.status === 'cancelled' || item.status === 'no-show'
+      );
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching order history:', error);
     throw error;
   }
 }

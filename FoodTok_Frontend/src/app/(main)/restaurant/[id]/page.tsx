@@ -211,7 +211,7 @@ export default function RestaurantDetailsPage() {
       <div className="p-6 space-y-6">
         {/* Restaurant Info */}
         <div className="space-y-4">
-          <p className="text-muted-foreground">{restaurant.description}</p>
+          <p className="text-muted-foreground leading-relaxed">{restaurant.description}</p>
           
           {/* Cuisine Tags */}
           <div className="flex flex-wrap gap-2">
@@ -225,188 +225,55 @@ export default function RestaurantDetailsPage() {
             ))}
           </div>
 
-          {/* Reserve Table Button */}
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={() => setReservationModalOpen(true)}
-          >
-            <Calendar className="h-5 w-5 mr-2" />
-            Reserve a Table
-          </Button>
-
           {/* Restaurant Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 text-sm">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div>
-                <div className="font-medium">Address</div>
+                <div className="font-medium mb-1">Address</div>
                 <div className="text-muted-foreground">
                   {restaurant.location.address}, {restaurant.location.city}
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 text-sm">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div>
-                <div className="font-medium">Hours</div>
+                <div className="font-medium mb-1">Hours</div>
                 <div className="text-muted-foreground">
                   Open until 10:00 PM
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Menu Categories */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Menu</h2>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category)}
-                className="whitespace-nowrap"
-              >
-                {capitalizeWords(category)}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Menu Items */}
-        <div className="space-y-4">
-          {filteredMenu.length === 0 && selectedCategory === 'all' && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground mb-4">
-                  Menu information is not available from Yelp.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Please visit the restaurant or call them for menu details.
-                </p>
-              </CardContent>
-            </Card>
+          {/* Yelp Link Button */}
+          {restaurant.url && (
+            <a
+              href={restaurant.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm font-medium transition-colors"
+            >
+              View on Yelp
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
           )}
-          {filteredMenu.map((item) => {
-            const quantity = itemQuantities[item.id] || 1;
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      {/* Item Image */}
-                      {item.image && (
-                        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Item Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold truncate">{item.name}</h3>
-                          <span className="font-bold text-primary flex-shrink-0 ml-2">
-                            {formatCurrency(item.price)}
-                          </span>
-                        </div>
-                        
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {item.description}
-                        </p>
 
-                        {/* Dietary Info */}
-                        {item.dietaryInfo.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {item.dietaryInfo.map((info) => (
-                              <span
-                                key={info}
-                                className="px-2 py-0.5 bg-success/10 text-success text-xs rounded"
-                              >
-                                {capitalizeWords(info)}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Add to Cart Controls */}
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center border rounded-lg">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => updateQuantity(item.id, -1)}
-                              disabled={quantity <= 1}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="px-3 text-sm font-medium w-8 text-center">
-                              {quantity}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => updateQuantity(item.id, 1)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          
-                          <Button
-                            size="sm"
-                            onClick={() => handleAddToCart(item)}
-                            className="flex-1"
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-2" />
-                            Add to Cart
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {filteredMenu.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No items found in this category.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Floating Cart Button */}
-      {cart && cart.items.length > 0 && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="fixed bottom-24 left-4 right-4 z-40"
-        >
+          {/* Reserve Table Button */}
           <Button
             size="lg"
-            className="w-full shadow-lg"
-            onClick={() => router.push('/cart')}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            onClick={() => setReservationModalOpen(true)}
           >
-            <ShoppingCart className="h-5 w-5 mr-2" />
-            View Cart ({cart.items.length} items) • {formatCurrency(cart.total)}
+            <Calendar className="h-5 w-5 mr-2" />
+            Reserve a Table
           </Button>
-        </motion.div>
-      )}
+        </div>
+      </div>
 
       {/* Reservation Modal */}
       <ReservationModal

@@ -10,11 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { MapPin, Calendar, Clock, Users, CreditCard, Check, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import HoldTimer from '@/components/reservation/HoldTimer';
 import { confirmReservation, getUserActiveHold } from '@/lib/api';
-import { useReservationStore } from '@/lib/stores';
+import { useReservationStore, useAuthStore } from '@/lib/stores';
 import type { Hold, Reservation } from '@/types/reservation';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const clearHold = useReservationStore((state) => state.clearHold);
   
   const [hold, setHold] = useState<Hold | null>(null);
@@ -36,6 +37,11 @@ export default function CheckoutPage() {
   }, []);
 
   const loadActiveHold = async () => {
+    if (!user?.id) {
+      router.push('/login');
+      return;
+    }
+    
     try {
       console.log('🔍 Checking for hold in zustand store...');
       const currentHold = useReservationStore.getState().activeHold;
@@ -50,7 +56,7 @@ export default function CheckoutPage() {
       
       console.log('⚠️ No hold in store, trying backend...');
       // Fallback to backend (shouldn't happen normally)
-      const backendHold = await getUserActiveHold('current_user');
+      const backendHold = await getUserActiveHold(user.id);
       if (!backendHold) {
         console.error('❌ No active hold found anywhere');
         router.push('/');
@@ -156,7 +162,7 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmReservation = async () => {
-    if (!hold) return;
+    if (!hold || !user?.id) return;
     
     setError('');
     
@@ -169,13 +175,14 @@ export default function CheckoutPage() {
     try {
       console.log('💳 Processing payment for reservation...');
       console.log('💰 Deposit amount:', hold.depositAmount);
+      console.log('👤 User ID:', user.id);
       
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const result = await confirmReservation({
         holdId: hold.holdId,
-        userId: 'current_user',
+        userId: user.id,
         paymentMethod: {
           type: 'credit-card',
           last4: cardNumber.replace(/\s/g, '').slice(-4),
@@ -371,7 +378,11 @@ export default function CheckoutPage() {
       <div className="max-w-4xl mx-auto px-4 py-4">
         <Button
           variant="ghost"
-          onClick={() => router.back()}
+          onClick={() => {
+            console.log('⬅️ Back button clicked - clearing hold');
+            clearHold();
+            router.back();
+          }}
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -487,9 +498,6 @@ export default function CheckoutPage() {
                       maxLength={19}
                       className="w-full"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Test card: 4242 4242 4242 4242
-                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -539,7 +547,7 @@ export default function CheckoutPage() {
                 <Button
                   onClick={handleConfirmReservation}
                   disabled={processing}
-                  className="w-full mt-6"
+                  className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   size="lg"
                 >
                   {processing ? (
@@ -554,10 +562,6 @@ export default function CheckoutPage() {
                     </>
                   )}
                 </Button>
-
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  🔒 Secure payment processing
-                </p>
               </CardContent>
             </Card>
           </div>
