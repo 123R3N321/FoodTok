@@ -68,6 +68,17 @@ smoke:
 
 ci: backend-build check smoke test
 
+# ------ Frontend Testing ------
+
+frontend-test:
+	cd FoodTok_Frontend && npm test -- --passWithNoTests
+
+frontend-test-coverage:
+	cd FoodTok_Frontend && npm test -- --coverage --passWithNoTests
+
+frontend-test-watch:
+	cd FoodTok_Frontend && npm test -- --watch
+
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------

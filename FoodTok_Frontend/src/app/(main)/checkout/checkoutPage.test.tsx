@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { render } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
 import CheckoutPage from './page';
-import { useCartStore, useReservationStore } from '@/lib/stores';
+import * as stores from '@/lib/stores';
 import '@testing-library/jest-dom';
 
 jest.mock('next/navigation');
@@ -12,24 +13,20 @@ jest.mock('next/image', () => ({
 }));
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-const mockUseCartStore = useCartStore as jest.MockedFunction<typeof useCartStore>;
-const mockUseReservationStore = useReservationStore as jest.MockedFunction<typeof useReservationStore>;
+const mockUseCartStore = (stores as any).useCartStore as jest.Mock;
+const mockUseReservationStore = (stores as any).useReservationStore as jest.Mock;
+const mockUseAuthStore = (stores as any).useAuthStore as jest.Mock;
 
-describe('CheckoutPage', () => {
+describe('CheckoutPage (smoke)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseRouter.mockReturnValue({ push: jest.fn() } as any);
-    mockUseCartStore.mockReturnValue({
-      cart: { items: [] },
-      clearCart: jest.fn(),
-    } as any);
-    mockUseReservationStore.mockReturnValue({
-      activeHold: null,
-      setActiveHold: jest.fn(),
-    } as any);
+    mockUseCartStore.mockReturnValue({ cart: { items: [] }, clearCart: jest.fn() });
+    mockUseReservationStore.mockReturnValue({ activeHold: null, clearHold: jest.fn() });
+    mockUseAuthStore.mockReturnValue({ user: null });
   });
 
-  it('should render checkout page without crashing', () => {
+  it('renders the checkout page without crashing', () => {
     const { container } = render(<CheckoutPage />);
     expect(container).toBeInTheDocument();
   });
