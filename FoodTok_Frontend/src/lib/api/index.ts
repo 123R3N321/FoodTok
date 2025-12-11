@@ -86,8 +86,8 @@ export type { UserStats } from './stats';
 // API Configuration
 // ============================================================================
 export const API_CONFIG = {
-  // Set in .env.local: NEXT_PUBLIC_API_URL=http://localhost:8080/api
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+  // Use Next.js API proxy route - forwards to backend at runtime
+  baseURL: '/api/backend',
   timeout: 30000, // 30 seconds
   headers: {
     'Content-Type': 'application/json',

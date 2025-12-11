@@ -174,6 +174,7 @@ export interface ReservationResponse {
 // For reservation list display
 export interface ReservationListItem {
   reservationId: string;
+  restaurantId: string;
   restaurantName: string;
   restaurantImage: string;
   restaurantCuisine: string[];

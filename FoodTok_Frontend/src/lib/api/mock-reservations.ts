@@ -549,6 +549,7 @@ export async function getUserReservations(
 
   return reservations.map(r => ({
     reservationId: r.reservationId,
+    restaurantId: r.restaurantId,
     restaurantName: r.restaurantName,
     restaurantImage: r.restaurantImage,
     restaurantCuisine: r.restaurantCuisine,

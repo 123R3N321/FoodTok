@@ -100,10 +100,10 @@ def main():
 
     # Get DynamoDB table names
     table_users = os.getenv("DDB_USERS_TABLE", "Users")
-    table_restaurants = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
+    #table_restaurants = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
     table_favorites = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
     table_reservations = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
-    table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+    #table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
     table_holds = os.getenv("DDB_HOLDS_TABLE", "Holds")
 
     # Get S3 Bucket names
@@ -111,10 +111,10 @@ def main():
 
     table_names = [
         table_users,
-        table_restaurants,
+        #table_restaurants,
         table_reservations,
         table_favorites,
-        table_user_stats,
+        #table_user_stats,
         table_holds,     
     ]
 
