@@ -9,10 +9,10 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 interface BackendECSProps {
   users: Table;
-  restaurants: Table;
+  //restaurants: Table;
   favorites: Table;
   reservations: Table;
-  userStats: Table;
+  //userStats: Table;
   holds: Table;
   imageBucket: Bucket;
   projectPrefix: string; 
@@ -49,10 +49,10 @@ export class BackendECSConstruct extends Construct {
       }), 
       environment: {
         DDB_USERS_TABLE: props.users.tableName,
-        DDB_RESTAURANTS_TABLE: props.restaurants.tableName,
+        //DDB_RESTAURANTS_TABLE: props.restaurants.tableName,
         DDB_FAVORITES_TABLE: props.favorites.tableName,
         DDB_RESERVATIONS_TABLE: props.reservations.tableName,
-        DDB_USER_STATS_TABLE:  props.userStats.tableName,
+        //DDB_USER_STATS_TABLE:  props.userStats.tableName,
         DDB_HOLDS_TABLE: props.holds.tableName,      
         AWS_REGION: process.env.CDK_DEFAULT_REGION ?? 'us-east-1',
         IS_LOCAL: 'false',
@@ -93,10 +93,10 @@ export class BackendECSConstruct extends Construct {
 
     // Grant ECS Task IAM permissions
     props.users.grantReadWriteData(taskDef.taskRole);
-    props.restaurants.grantReadWriteData(taskDef.taskRole);
+    //props.restaurants.grantReadWriteData(taskDef.taskRole);
     props.favorites.grantReadWriteData(taskDef.taskRole);
     props.reservations.grantReadWriteData(taskDef.taskRole);
-    props.userStats.grantReadWriteData(taskDef.taskRole);
+    //props.userStats.grantReadWriteData(taskDef.taskRole);
     props.holds.grantReadWriteData(taskDef.taskRole);
 
     props.imageBucket.grantReadWrite(taskDef.taskRole);

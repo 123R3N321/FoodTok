@@ -4,8 +4,10 @@ services:
       context: ./FoodTok_Frontend
       dockerfile: Dockerfile.frontend
     container_name: frontend
+    env_file:
+      - ./FoodTok_Frontend/.env
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
+      - NODE_ENV=production
     ports:
       - "3000:3000"
     networks:

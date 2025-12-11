@@ -24,10 +24,10 @@ LOCAL_S3_ENDPOINT = os.getenv("LOCAL_S3_ENDPOINT")
 BUCKET_IMAGES = os.getenv("S3_IMAGE_BUCKET", "foodtok-local-images")
 
 TABLE_USERS = os.getenv("DDB_USERS_TABLE", "Users")
-TABLE_RESTAURANTS = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
+#TABLE_RESTAURANTS = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
 TABLE_FAVORITES = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
 TABLE_RESERVATIONS = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
-TABLE_USER_STATS = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+#TABLE_USER_STATS = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
 TABLE_HOLDS = os.getenv("DDB_HOLDS_TABLE", "Holds")
 
 dynamodb = get_dynamodb()
@@ -67,7 +67,8 @@ def convert_price_to_int(price_value):
         except ValueError:
             return 2  # Default to moderate
     return 2
-    
+
+
 # ----------------------------------------------------
 # api/helloECS - Health Check
 # ----------------------------------------------------
@@ -75,7 +76,7 @@ def convert_price_to_int(price_value):
 def hello_ecs(request):
     return Response({"status": "healthy"}, status=200)
 
-
+""" 
 # ----------------------------------------------------
 # api/uploadECS
 # ----------------------------------------------------
@@ -134,19 +135,14 @@ def get_restaurants(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+"""
 
-
+"""
 # ----------------------------------------------------
 # api/restaurants/discovery - Personalized feed
 # ----------------------------------------------------
 @api_view(["GET"])
 def discover_restaurants(request):
-    """
-    GET /api/restaurants/discovery?userId=X&limit=Y
-    
-    Returns personalized restaurant recommendations with match scores.
-    Matches based on user preferences (cuisine, price, dietary).
-    """
     try:
         user_id = request.GET.get("userId")
         limit = int(request.GET.get("limit", 10))
@@ -197,7 +193,7 @@ def discover_restaurants(request):
         
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-
+"""
 
 def calculate_match_score(restaurant, preferred_cuisines, preferred_price, dietary_restrictions):
     """
@@ -268,17 +264,12 @@ def calculate_match_score(restaurant, preferred_cuisines, preferred_price, dieta
         "reasons": reasons[:3]  # Top 3 reasons
     }
 
-
+"""
 # ----------------------------------------------------
 # api/restaurants/<id> - Single restaurant detail
 # ----------------------------------------------------
 @api_view(["GET"])
 def get_restaurant_detail(request, restaurant_id):
-    """
-    GET /api/restaurants/<id>
-    
-    Returns detailed information for a single restaurant.
-    """
     try:
         table = dynamodb.Table(TABLE_RESTAURANTS)
         response = table.get_item(Key={"id": restaurant_id})
@@ -294,23 +285,14 @@ def get_restaurant_detail(request, restaurant_id):
         
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+"""
 
-
+"""
 # ----------------------------------------------------
 # api/restaurants/search - Filtered search
 # ----------------------------------------------------
 @api_view(["GET"])
 def search_restaurants(request):
-    """
-    GET /api/restaurants/search?cuisine=Italian&priceRange=2,3&minRating=4.0
-    
-    Search restaurants with filters:
-    - cuisine: Cuisine type (e.g., "Italian", "Japanese")
-    - priceRange: Comma-separated price levels (1-4)
-    - minRating: Minimum rating (0.0-5.0)
-    - city: City filter (e.g., "New York")
-    - limit: Max results (default 20)
-    """
     try:
         # Parse query parameters
         cuisine = request.GET.get("cuisine")
@@ -387,7 +369,7 @@ def search_restaurants(request):
         
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-
+"""
 
 # ============================================================
 # AUTHENTICATION ENDPOINTS
@@ -1525,14 +1507,13 @@ def check_favorite(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-
+"""
 # ============================================================================
 # USER STATS ENDPOINTS
 # ============================================================================
 
 @api_view(["GET"])
 def get_user_stats(request, user_id):
-    """Get user statistics from UserStats table"""
     try:        
         stats_table = dynamodb.Table(TABLE_USER_STATS)
         
@@ -1562,3 +1543,4 @@ def get_user_stats(request, user_id):
     except Exception as e:
         print(f"Error fetching user stats: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+"""

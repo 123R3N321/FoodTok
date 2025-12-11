@@ -38,8 +38,9 @@ export class FrontendECSConstruct extends Construct {
         platform: Platform.LINUX_AMD64,
       }),
       environment: {
-        NEXT_PUBLIC_API_URL: `http://${props.backendLoadBalancerDns}/api`,
         NODE_ENV: 'production',
+        BACKEND_API_URL: `http://${props.backendLoadBalancerDns}/api`,
+        YELP_API_KEY: `XGjtnGCXkhEW5wggLQvG18IR1bDTz6eP-Wb6cc2W9ACdxEDmNhon2vQm6SEcb1jUJAdD8Mh048Zpfp-G4DjrFBCiX4AJaQZxPqCEJWVwXok4CKwp4d-PO43sH_MkaXYx`,
       },
       logging: LogDriver.awsLogs({
         logGroup,

@@ -293,7 +293,7 @@ export default function ProfilePage() {
               onClick={() => router.push('/history')}
             >
               <Clock className="h-4 w-4 mr-3 text-orange-500" />
-              Order History
+              Reservation History
             </Button>
             
             <Button 
@@ -311,7 +311,7 @@ export default function ProfilePage() {
               onClick={() => router.push('/settings')}
             >
               <Settings className="h-4 w-4 mr-3 text-orange-500" />
-              Settings & Privacy
+              Settings
             </Button>
           </CardContent>
         </Card>
@@ -319,7 +319,7 @@ export default function ProfilePage() {
         {/* Recent Activity */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle>Recently Completed Reservations</CardTitle>
             {recentOrders.length > 0 && (
               <Button 
                 variant="ghost" 

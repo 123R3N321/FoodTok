@@ -28,10 +28,10 @@ export class MainStack extends Stack {
 
     const backendEcs = new BackendECSConstruct(this, 'BackendECSConstruct', {
       users: ddb.users,
-      restaurants: ddb.restaurants,
+      //restaurants: ddb.restaurants,
       favorites: ddb.favorites,
       reservations: ddb.reservations,
-      userStats: ddb.userStats,
+      //userStats: ddb.userStats,
       holds: ddb.holds,
       imageBucket: s3.imageBucket,
       projectPrefix,     
