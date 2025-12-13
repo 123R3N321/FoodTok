@@ -48,6 +48,23 @@ def test_auth_login_roundtrip():
     assert body["user"]["email"] == email
 
 
+def test_auth_signup_creates_user():
+    _require_backend()
+    email = f"smoke-signup+{uuid.uuid4().hex}@example.com"
+    payload = {
+        "email": email,
+        "password": "Pass!123",
+        "firstName": "Signup",
+        "lastName": "Tester",
+    }
+    response = requests.post(f"{BASE_URL}/auth/signup", json=payload, timeout=DEFAULT_TIMEOUT)
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert isinstance(body, dict)
+    assert "user" in body
+    assert body["user"]["email"] == email
+
+
 def _require_backend() -> None:
     try:
         requests.get("http://localhost:8080/api/helloECS", timeout=3)
