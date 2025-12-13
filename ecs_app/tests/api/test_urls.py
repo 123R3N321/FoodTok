@@ -1,11 +1,17 @@
 import os
 import uuid
 
+import boto3
 import pytest
 import requests
 
 BASE_URL = os.getenv("FOODTOK_SMOKE_BASE_URL", "http://localhost:8080/api").rstrip("/")
 DEFAULT_TIMEOUT = int(os.getenv("FOODTOK_SMOKE_REQUEST_TIMEOUT", "15"))
+DYNAMO_ENDPOINT = os.getenv("FOODTOK_SMOKE_DYNAMO_ENDPOINT", "http://localhost:8000")
+DYNAMO_REGION = os.getenv("FOODTOK_SMOKE_DYNAMO_REGION", "us-east-1")
+DYNAMO_KEY = os.getenv("FOODTOK_SMOKE_AWS_KEY", "test")
+DYNAMO_SECRET = os.getenv("FOODTOK_SMOKE_AWS_SECRET", "test")
+DDB_RESTAURANTS_TABLE = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
 
 
 def test_healthcheck_url_is_available():
@@ -153,6 +159,83 @@ def test_auth_change_password_roundtrip():
         timeout=DEFAULT_TIMEOUT,
     )
     assert revert_response.status_code == 200, revert_response.text
+
+
+def test_favorites_endpoints_flow():
+    _require_backend()
+    email = f"smoke-fav+{uuid.uuid4().hex}@example.com"
+    password = "Pass!123"
+    restaurant_id = f"smoke-rest-{uuid.uuid4().hex[:6]}"
+    _ensure_restaurant_via_dynamo(
+        {
+            "restaurantId": restaurant_id,
+            "name": "Favorites Smoke Test",
+            "description": "Test restaurant for favorites flow",
+            "cuisine": ["Smoke"],
+            "priceRange": "$$",
+        }
+    )
+
+    signup_payload = {
+        "email": email,
+        "password": password,
+        "firstName": "Fav",
+        "lastName": "Tester",
+    }
+    signup_response = requests.post(f"{BASE_URL}/auth/signup", json=signup_payload, timeout=DEFAULT_TIMEOUT)
+    assert signup_response.status_code == 201, signup_response.text
+    user_id = signup_response.json()["user"]["id"]
+
+    add_payload = {
+        "userId": user_id,
+        "restaurantId": restaurant_id,
+        "restaurantName": "Favorites Smoke Test",
+        "restaurantImage": "",
+        "matchScore": 99,
+    }
+    add_response = requests.post(f"{BASE_URL}/favorites", json=add_payload, timeout=DEFAULT_TIMEOUT)
+    assert add_response.status_code in (200, 201), add_response.text
+
+    check_response = requests.get(
+        f"{BASE_URL}/favorites/check",
+        params={"userId": user_id, "restaurantId": restaurant_id},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert check_response.status_code == 200, check_response.text
+    assert check_response.json().get("isFavorite") is True
+
+    list_response = requests.get(f"{BASE_URL}/favorites/{user_id}", timeout=DEFAULT_TIMEOUT)
+    assert list_response.status_code == 200, list_response.text
+    favorites = list_response.json()
+    assert isinstance(favorites, list)
+    assert any(fav.get("restaurantId") == restaurant_id for fav in favorites)
+
+    delete_response = requests.delete(
+        f"{BASE_URL}/favorites",
+        params={"userId": user_id, "restaurantId": restaurant_id},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert delete_response.status_code == 200, delete_response.text
+
+    recheck_response = requests.get(
+        f"{BASE_URL}/favorites/check",
+        params={"userId": user_id, "restaurantId": restaurant_id},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert recheck_response.status_code == 200, recheck_response.text
+    assert recheck_response.json().get("isFavorite") is False
+
+
+def _ensure_restaurant_via_dynamo(item: dict) -> None:
+    dynamodb = boto3.resource(
+        "dynamodb",
+        endpoint_url=DYNAMO_ENDPOINT,
+        region_name=DYNAMO_REGION,
+        aws_access_key_id=DYNAMO_KEY,
+        aws_secret_access_key=DYNAMO_SECRET,
+    )
+    table = dynamodb.Table(DDB_RESTAURANTS_TABLE)
+    table.put_item(Item=item)
 
 
 def _require_backend() -> None:
