@@ -108,6 +108,53 @@ def test_auth_preferences_updates_profile():
     assert profile_body["user"]["firstName"] == "Updated"
 
 
+def test_auth_change_password_roundtrip():
+    _require_backend()
+    email = f"smoke-changepw+{uuid.uuid4().hex}@example.com"
+    original_password = "Pass!123"
+    new_password = "Pass!456"
+
+    signup_payload = {
+        "email": email,
+        "password": original_password,
+        "firstName": "Changer",
+        "lastName": "Tester",
+    }
+    signup_response = requests.post(f"{BASE_URL}/auth/signup", json=signup_payload, timeout=DEFAULT_TIMEOUT)
+    assert signup_response.status_code == 201, signup_response.text
+    user_id = signup_response.json()["user"]["id"]
+
+    change_payload = {
+        "userId": user_id,
+        "currentPassword": original_password,
+        "newPassword": new_password,
+    }
+    change_response = requests.post(
+        f"{BASE_URL}/auth/change-password",
+        json=change_payload,
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert change_response.status_code == 200, change_response.text
+
+    # ensure login works with new password
+    login_payload = {"email": email, "password": new_password}
+    login_response = requests.post(f"{BASE_URL}/auth/login", json=login_payload, timeout=DEFAULT_TIMEOUT)
+    assert login_response.status_code == 200, login_response.text
+
+    # change password back to original for cleanliness
+    revert_payload = {
+        "userId": user_id,
+        "currentPassword": new_password,
+        "newPassword": original_password,
+    }
+    revert_response = requests.post(
+        f"{BASE_URL}/auth/change-password",
+        json=revert_payload,
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert revert_response.status_code == 200, revert_response.text
+
+
 def _require_backend() -> None:
     try:
         requests.get("http://localhost:8080/api/helloECS", timeout=3)
