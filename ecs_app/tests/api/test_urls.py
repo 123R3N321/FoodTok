@@ -97,6 +97,16 @@ def test_auth_preferences_updates_profile():
     prefs = body["user"].get("preferences", {})
     assert prefs.get("cuisines") == update_payload["preferences"]["cuisines"]
 
+    profile_response = requests.get(
+        f"{BASE_URL}/auth/profile/{user_id}",
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert profile_response.status_code == 200, profile_response.text
+    profile_body = profile_response.json()
+    assert "user" in profile_body
+    assert profile_body["user"]["id"] == user_id
+    assert profile_body["user"]["firstName"] == "Updated"
+
 
 def _require_backend() -> None:
     try:
