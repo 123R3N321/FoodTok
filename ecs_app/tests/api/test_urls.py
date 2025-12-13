@@ -65,6 +65,39 @@ def test_auth_signup_creates_user():
     assert body["user"]["email"] == email
 
 
+def test_auth_preferences_updates_profile():
+    _require_backend()
+    email = f"smoke-pref+{uuid.uuid4().hex}@example.com"
+    password = "Pass!123"
+    signup_payload = {
+        "email": email,
+        "password": password,
+        "firstName": "Pref",
+        "lastName": "Tester",
+    }
+    signup_response = requests.post(f"{BASE_URL}/auth/signup", json=signup_payload, timeout=DEFAULT_TIMEOUT)
+    assert signup_response.status_code == 201, signup_response.text
+    user_id = signup_response.json()["user"]["id"]
+
+    update_payload = {
+        "userId": user_id,
+        "preferences": {
+            "cuisines": ["Thai", "Italian"],
+            "dietaryRestrictions": ["Vegetarian"],
+            "priceRange": [2, 3],
+        },
+        "firstName": "Updated",
+    }
+    response = requests.patch(f"{BASE_URL}/auth/preferences", json=update_payload, timeout=DEFAULT_TIMEOUT)
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert "user" in body
+    assert body["user"]["id"] == user_id
+    assert body["user"]["firstName"] == "Updated"
+    prefs = body["user"].get("preferences", {})
+    assert prefs.get("cuisines") == update_payload["preferences"]["cuisines"]
+
+
 def _require_backend() -> None:
     try:
         requests.get("http://localhost:8080/api/helloECS", timeout=3)
