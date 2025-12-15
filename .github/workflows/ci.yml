@@ -68,55 +68,13 @@ jobs:
           exit 1
         fi
 
-    - name: Create DynamoDB tables and S3 buckets
+    - name: Initialize DynamoDB tables and S3 buckets (local_config)
       run: |
-        echo "Creating DynamoDB tables and S3 buckets..."
-        # Wait a bit more to ensure services are fully ready
-        echo "Waiting 5 seconds for services to stabilize..."
+        echo "Initializing DynamoDB tables and S3 buckets via local_config service..."
+        # Wait a bit for services to settle
         sleep 5
-        
-        # Verify network exists
-        echo "Checking Docker network..."
-        docker network inspect localstack-net > /dev/null 2>&1 || {
-          echo "❌ Network 'localstack-net' not found!"
-          echo "Available networks:"
-          docker network ls
-          exit 1
-        }
-        
-        # Verify services are running
-        echo "Checking service containers..."
-        docker ps --filter "name=dynamo" --filter "name=localstack" --format "table {{.Names}}\t{{.Status}}"
-        
-        # Test connectivity from within the network first
-        echo "Testing network connectivity from container..."
-        docker run --rm --network localstack-net \
-          curlimages/curl:latest \
-          sh -c "echo 'Testing DynamoDB...' && curl -s -o /dev/null -w 'DynamoDB: %{http_code}\n' http://dynamo:8000 && echo 'Testing LocalStack...' && curl -s -o /dev/null -w 'LocalStack: %{http_code}\n' http://localstack:4566/_localstack/health" || {
-          echo "⚠️  Network connectivity test failed, but continuing..."
-        }
-        
-        # Run setup script in a container on the same Docker network as other services
-        # This allows it to use service names (dynamo:8000, localstack:4566) instead of localhost
-        echo "Running setup script in container..."
-        docker run --rm \
-          --network localstack-net \
-          -e IS_LOCAL=true \
-          -e AWS_REGION=us-east-1 \
-          -e AWS_ACCESS_KEY_ID=test \
-          -e AWS_SECRET_ACCESS_KEY=test \
-          -e LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000 \
-          -e LOCAL_S3_ENDPOINT=http://localstack:4566 \
-          -e DDB_USERS_TABLE=Users \
-          -e DDB_RESTAURANTS_TABLE=Restaurants \
-          -e DDB_FAVORITES_TABLE=Favorites \
-          -e DDB_RESERVATIONS_TABLE=Reservations \
-          -e DDB_USER_STATS_TABLE=UserStats \
-          -e DDB_HOLDS_TABLE=Holds \
-          -e S3_IMAGES_BUCKET=foodtok-local-images \
-          -v "$PWD/.github/workflows/setup_local_infra.py:/setup.py:ro" \
-          python:3.11-slim \
-          sh -c "pip install -q boto3 && python /setup.py"
+        # Run the same setup used locally via docker-compose service
+        docker compose -p foodtok-backend -f docker-compose.backend.yml run --rm --no-deps local_config
         echo "✓ Infrastructure setup complete"
 
     - name: Wait for backend to be healthy

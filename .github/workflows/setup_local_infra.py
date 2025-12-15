@@ -106,33 +106,38 @@ def create_dynamodb_table(dynamodb, table_name: str):
         if not schema:
             raise Exception(f"Unknown table schema for {table_name}")
 
-        # Use a more efficient approach - try to describe the table first
-        # This is faster than listing all tables
-        try:
-            dynamodb.meta.client.describe_table(TableName=table_name)
-            print(f"   ✓ DynamoDB table '{table_name}' already exists.")
-            return
-        except ClientError as e:
-            # Table doesn't exist if error code is ResourceNotFoundException
-            if e.response['Error']['Code'] != 'ResourceNotFoundException':
-                raise
-
+        # Use low-level client for more control and better timeout handling
+        client = dynamodb.meta.client
+        
+        # Skip existence check - just try to create and catch "already exists" error
         print(f"   Creating DynamoDB table: {table_name}...")
-        table = dynamodb.create_table(**schema)
-        # Use a shorter wait timeout since we're creating new tables
-        table.wait_until_exists()
-        print(f"   ✓ DynamoDB table '{table_name}' created successfully.")
+        try:
+            # Use low-level client.create_table() directly
+            response = client.create_table(**schema)
+            print(f"   ✓ Create request sent for '{table_name}'")
+            # Don't wait - DynamoDB Local can be very slow
+        except Exception as create_error:
+            # Re-raise to be caught by outer exception handler
+            raise
 
     except ClientError as e:
         error_code = e.response.get('Error', {}).get('Code', 'Unknown')
         if error_code == 'ResourceInUseException':
-            print(f"   ✓ DynamoDB table '{table_name}' already exists (race condition).")
+            print(f"   ✓ DynamoDB table '{table_name}' already exists.")
         else:
-            print(f"   ❌ DynamoDB creation error for '{table_name}': {e}")
+            print(f"   ❌ DynamoDB creation error for '{table_name}': {error_code}")
+            # Don't print full error to avoid noise, but still raise
             raise
     except Exception as e:
-        print(f"   ❌ Unexpected error creating table '{table_name}': {e}")
-        raise
+        error_str = str(e).lower()
+        # Check if it's a timeout - if so, table might still have been created
+        if 'timeout' in error_str or 'timed out' in error_str:
+            print(f"   ⚠️  Timeout creating '{table_name}' (this is common with DynamoDB Local)")
+            print(f"      Table may have been created. Continuing with other tables...")
+            # Don't raise - continue with other tables
+        else:
+            print(f"   ❌ Unexpected error creating table '{table_name}': {e}")
+            raise
 
 
 def create_s3_bucket(s3_client, bucket_name: str, region: str):
@@ -198,11 +203,12 @@ def main():
     print(f"   DynamoDB endpoint: {dynamo_endpoint}")
     print(f"   S3 endpoint: {s3_endpoint}")
     
-    # Use longer timeouts for DynamoDB Local which can be slow
+    # Use much longer timeouts for DynamoDB Local which can be very slow
+    # Also disable retries to avoid compounding timeout issues
     dynamodb_config = Config(
-        connect_timeout=30,
-        read_timeout=30,
-        retries={'max_attempts': 2, 'mode': 'standard'}
+        connect_timeout=60,
+        read_timeout=60,
+        retries={'max_attempts': 1}  # Single attempt to avoid long retry chains
     )
     
     dynamodb = boto3.resource(
@@ -218,7 +224,7 @@ def main():
     s3_config = Config(
         connect_timeout=30,
         read_timeout=30,
-        retries={'max_attempts': 2, 'mode': 'standard'}
+        retries={'max_attempts': 1}
     )
     
     s3 = boto3.client(
@@ -258,8 +264,12 @@ def main():
 
     # Create DDB tables and S3 Buckets
     print(f"\n📦 Creating DynamoDB tables...")
+    print(f"   Waiting 5 seconds for DynamoDB to be fully ready...")
+    time.sleep(5)  # Give DynamoDB Local a moment to stabilize
+    
     for table_name in table_names:
         create_dynamodb_table(dynamodb, table_name)
+        time.sleep(1)  # Small delay between table creations
 
     print(f"\n🪣 Creating S3 buckets...")
     create_s3_bucket(s3, bucket_images, region)

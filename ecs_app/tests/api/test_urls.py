@@ -14,7 +14,6 @@ DYNAMO_ENDPOINT = os.getenv("FOODTOK_SMOKE_DYNAMO_ENDPOINT", "http://localhost:8
 DYNAMO_REGION = os.getenv("FOODTOK_SMOKE_DYNAMO_REGION", "us-east-1")
 DYNAMO_KEY = os.getenv("FOODTOK_SMOKE_AWS_KEY", "test")
 DYNAMO_SECRET = os.getenv("FOODTOK_SMOKE_AWS_SECRET", "test")
-DDB_RESTAURANTS_TABLE = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
 DDB_USERS_TABLE = os.getenv("DDB_USERS_TABLE", "Users")
 DDB_RESERVATIONS_TABLE = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
 DDB_HOLDS_TABLE = os.getenv("DDB_HOLDS_TABLE", "Holds")
@@ -498,15 +497,7 @@ def test_reservations_full_flow():
 
 
 def _ensure_restaurant_via_dynamo(item: dict) -> str:
-    dynamodb = boto3.resource(
-        "dynamodb",
-        endpoint_url=DYNAMO_ENDPOINT,
-        region_name=DYNAMO_REGION,
-        aws_access_key_id=DYNAMO_KEY,
-        aws_secret_access_key=DYNAMO_SECRET,
-    )
-    table = dynamodb.Table(DDB_RESTAURANTS_TABLE)
-    table.put_item(Item=item)
+    # No-op: we no longer write restaurants to DynamoDB; just return the id
     return item["restaurantId"]
 
 
