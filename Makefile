@@ -79,6 +79,10 @@ frontend-test-coverage:
 frontend-test-watch:
 	cd FoodTok_Frontend && npm test -- --watch
 
+# ------ Backend Testing ------
+backend-test:
+	pytest ecs_app/tests/api/test_urls.py
+
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------
