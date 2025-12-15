@@ -38,8 +38,8 @@ class LoadTestRampUp(LoadTestShape):
     Ramps up from 1 to 5 users over 15 seconds, then holds for 15 seconds.
     """
     stages = [
-        {"duration": 15, "users": 5, "spawn_rate": 0.3},
-        {"duration": 15, "users": 5, "spawn_rate": 1},
+        {"duration": 60, "users": 20, "spawn_rate": 0.05},
+        {"duration": 60, "users": 20, "spawn_rate": 1},
     ]
 
     def tick(self):
