@@ -24,6 +24,11 @@ jobs:
         cd ecs_app
         pip install -r requirements.txt
 
+    - name: Prepare local data directories (DynamoDB/LocalStack)
+      run: |
+        mkdir -p local/dynamo local/localstack
+        chmod -R 777 local/dynamo local/localstack
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
