@@ -83,6 +83,8 @@ frontend-test-watch:
 backend-test:
 	pytest ecs_app/tests/api/test_urls.py
 
+backend-test-coverage:
+	pytest ecs_app/tests/api/test_urls.py -s
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------
