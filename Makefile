@@ -85,7 +85,7 @@ backend-test:
 	cd ecs_app && pytest tests/api/ -v --full-trace
 
 backend-test-coverage:
-	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html
+	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html --cov-report=term
 
 backend-test-no-stack:
 	FOODTOK_SMOKE_MANAGE_STACK=0 pytest ecs_app/tests/api/ -v
@@ -110,7 +110,6 @@ load-test-local:
 load-test-frontend:
 	@echo "Running frontend load test (1-5 users)..."
 	locust -f load_tests/locustfile.py --host=$(LOAD_TEST_HOST) --headless --users 5 --spawn-rate 0.3 --run-time 30s --csv=load_tests/results
-
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------

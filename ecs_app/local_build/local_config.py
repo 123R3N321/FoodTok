@@ -66,7 +66,9 @@ def create_s3_bucket(s3_client, bucket_name: str, region: str):
         print(f"S3 bucket creation error: {e}")
 
 def main():
-    print("Starting setup...")
+    print("=" * 60)
+    print("Starting local infrastructure setup...")
+    print("=" * 60)
 
     is_local = os.getenv("IS_LOCAL", "true").lower() == "true"
     region = os.getenv("AWS_REGION", "us-east-1")
@@ -75,19 +77,25 @@ def main():
     if is_local:
         dynamo_endpoint = os.getenv("LOCAL_DYNAMO_ENDPOINT", "http://localhost:8000")
         s3_endpoint = os.getenv("LOCAL_S3_ENDPOINT", "http://localhost:4566")
-        print(f"Using LocalStack/DynamoDB Local endpoints: {dynamo_endpoint}, {s3_endpoint}")
+        print("Using LocalStack/DynamoDB Local endpoints:")
+        print(f"  DynamoDB: {dynamo_endpoint}")
+        print(f"  S3      : {s3_endpoint}")
     else:
         dynamo_endpoint = None
         s3_endpoint = None
         print("Using AWS production endpoints")
 
-    # Initialize ddb client and s3 client
+    # Initialize ddb client and s3 client with higher timeouts for local stacks
+    config = boto3.session.Config(connect_timeout=30, read_timeout=30, retries={"max_attempts": 1})
+
+    print("Initializing DynamoDB/S3 clients...")
     dynamodb = boto3.resource(
         "dynamodb",
         region_name=region,
         endpoint_url=dynamo_endpoint,
         aws_access_key_id="test" if is_local else None,
         aws_secret_access_key="test" if is_local else None,
+        config=config,
     )
 
     s3 = boto3.client(
@@ -96,11 +104,11 @@ def main():
         endpoint_url=s3_endpoint,
         aws_access_key_id="test" if is_local else None,
         aws_secret_access_key="test" if is_local else None,
+        config=config,
     )
 
     # Get DynamoDB table names
     table_users = os.getenv("DDB_USERS_TABLE", "Users")
-    #table_restaurants = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
     table_favorites = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
     table_reservations = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
     #table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
@@ -111,21 +119,25 @@ def main():
 
     table_names = [
         table_users,
-        #table_restaurants,
         table_reservations,
         table_favorites,
         #table_user_stats,
-        table_holds,     
+        table_holds,
     ]
 
     # Create DDB tables and S3 Buckets
+    print("\nCreating DynamoDB tables:")
     for table_name in table_names:
-        #delete_dynamodb_table_if_exists(dynamodb, table_name)
+        print(f"  -> {table_name}")
+        # delete_dynamodb_table_if_exists(dynamodb, table_name)
         create_dynamodb_table(dynamodb, table_name)
 
+    print("\nCreating S3 bucket:")
+    print(f"  -> {bucket_images}")
     create_s3_bucket(s3, bucket_images, region)    
 
-    print("Setup completed successfully!")
+    print("\nSetup completed successfully!")
+    print("=" * 60)
 
 if __name__ == "__main__":
     main()
