@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COVERAGE_MIN: 75
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     
     steps:
     - name: Checkout code
@@ -141,14 +142,15 @@ jobs:
         path: ecs_app/htmlcov/
         retention-days: 7
 
-    - name: Upload coverage reports
+    - name: Upload coverage reports (Codecov)
+      if: always() && env.CODECOV_TOKEN != ''
       uses: codecov/codecov-action@v4
-      if: always()
       with:
         file: ./ecs_app/coverage.xml
         flags: backend
         name: backend-coverage
-        fail_ci_if_error: true
+        token: ${{ env.CODECOV_TOKEN }}
+        fail_ci_if_error: false
 
     - name: Show backend logs on failure
       if: failure()
