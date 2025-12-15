@@ -19,35 +19,24 @@ jest.mock('@/lib/stores', () => ({
   useCartStore: jest.fn(() => ({ cart: { items: [] }, addItem: jest.fn(), setCartOpen: jest.fn() })),
   useReservationStore: jest.fn(() => ({ setActiveHold: jest.fn() })),
 }));
+jest.mock('@/components/reservation/ReservationModal', () => {
+  return function MockReservationModal() {
+    return <div data-testid="reservation-modal">Reservation Modal</div>;
+  };
+});
+jest.mock('@/lib/api', () => ({
+  getRestaurantById: jest.fn(),
+  getDiscoveryRestaurants: jest.fn(),
+}));
 
 import RestaurantDetailsPage from './page';
 
 describe('RestaurantDetailsPage (smoke)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (global as any).fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        id: '1',
-        name: 'Test Restaurant',
-        description: 'Test',
-        menu: [],
-        images: [],
-        rating: 4.5,
-        reviewCount: 100,
-        priceRange: '$$',
-        cuisine: ['Italian'],
-        location: { address: '123 Main St', city: 'Test City' },
-        url: 'https://yelp.com',
-      }),
-    });
   });
 
-  afterEach(() => {
-    delete (global as any).fetch;
-  });
-
-  it('renders without crashing', () => {
+  it('renders the restaurant details page without crashing', () => {
     const { container } = render(<RestaurantDetailsPage />);
     expect(container).toBeInTheDocument();
   });
