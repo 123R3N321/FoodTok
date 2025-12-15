@@ -71,8 +71,34 @@ jobs:
     - name: Create DynamoDB tables and S3 buckets
       run: |
         echo "Creating DynamoDB tables and S3 buckets..."
+        # Wait a bit more to ensure services are fully ready
+        echo "Waiting 5 seconds for services to stabilize..."
+        sleep 5
+        
+        # Verify network exists
+        echo "Checking Docker network..."
+        docker network inspect localstack-net > /dev/null 2>&1 || {
+          echo "❌ Network 'localstack-net' not found!"
+          echo "Available networks:"
+          docker network ls
+          exit 1
+        }
+        
+        # Verify services are running
+        echo "Checking service containers..."
+        docker ps --filter "name=dynamo" --filter "name=localstack" --format "table {{.Names}}\t{{.Status}}"
+        
+        # Test connectivity from within the network first
+        echo "Testing network connectivity from container..."
+        docker run --rm --network localstack-net \
+          curlimages/curl:latest \
+          sh -c "echo 'Testing DynamoDB...' && curl -s -o /dev/null -w 'DynamoDB: %{http_code}\n' http://dynamo:8000 && echo 'Testing LocalStack...' && curl -s -o /dev/null -w 'LocalStack: %{http_code}\n' http://localstack:4566/_localstack/health" || {
+          echo "⚠️  Network connectivity test failed, but continuing..."
+        }
+        
         # Run setup script in a container on the same Docker network as other services
         # This allows it to use service names (dynamo:8000, localstack:4566) instead of localhost
+        echo "Running setup script in container..."
         docker run --rm \
           --network localstack-net \
           -e IS_LOCAL=true \

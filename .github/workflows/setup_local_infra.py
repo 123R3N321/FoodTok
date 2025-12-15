@@ -8,6 +8,7 @@ import boto3
 import os
 import time
 from botocore.exceptions import ClientError
+from botocore.config import Config
 from enum import Enum
 
 # Table definitions
@@ -141,7 +142,9 @@ def create_s3_bucket(s3_client, bucket_name: str, region: str):
 
 
 def main():
+    print("=" * 60)
     print("Starting CI infrastructure setup...")
+    print("=" * 60)
 
     is_local = os.getenv("IS_LOCAL", "true").lower() == "true"
     region = os.getenv("AWS_REGION", "us-east-1")
@@ -150,28 +153,62 @@ def main():
     if is_local:
         dynamo_endpoint = os.getenv("LOCAL_DYNAMO_ENDPOINT", "http://localhost:8000")
         s3_endpoint = os.getenv("LOCAL_S3_ENDPOINT", "http://localhost:4566")
-        print(f"Using LocalStack/DynamoDB Local endpoints: {dynamo_endpoint}, {s3_endpoint}")
+        print(f"\n📋 Configuration:")
+        print(f"   IS_LOCAL: {is_local}")
+        print(f"   AWS_REGION: {region}")
+        print(f"   DynamoDB Endpoint: {dynamo_endpoint}")
+        print(f"   S3 Endpoint: {s3_endpoint}")
+        print(f"   AWS_ACCESS_KEY_ID: {os.getenv('AWS_ACCESS_KEY_ID', 'NOT SET')}")
+        print(f"   AWS_SECRET_ACCESS_KEY: {'SET' if os.getenv('AWS_SECRET_ACCESS_KEY') else 'NOT SET'}")
     else:
         dynamo_endpoint = None
         s3_endpoint = None
         print("Using AWS production endpoints")
 
     # Initialize ddb client and s3 client
-    dynamodb = boto3.resource(
-        "dynamodb",
-        region_name=region,
-        endpoint_url=dynamo_endpoint,
-        aws_access_key_id="test" if is_local else None,
-        aws_secret_access_key="test" if is_local else None,
-    )
-
-    s3 = boto3.client(
-        "s3",
-        region_name=region,
-        endpoint_url=s3_endpoint,
-        aws_access_key_id="test" if is_local else None,
-        aws_secret_access_key="test" if is_local else None,
-    )
+    print(f"\n🔌 Connecting to services...")
+    print(f"   Testing DynamoDB connection to: {dynamo_endpoint}")
+    
+    try:
+        dynamodb = boto3.resource(
+            "dynamodb",
+            region_name=region,
+            endpoint_url=dynamo_endpoint,
+            aws_access_key_id="test" if is_local else None,
+            aws_secret_access_key="test" if is_local else None,
+            config=Config(
+                connect_timeout=10,
+                read_timeout=10,
+                retries={'max_attempts': 3}
+            )
+        )
+        # Test connection by listing tables
+        test_tables = dynamodb.meta.client.list_tables()
+        print(f"   ✓ DynamoDB connection successful! Found {len(test_tables.get('TableNames', []))} existing tables")
+    except Exception as e:
+        print(f"   ❌ DynamoDB connection failed: {e}")
+        raise
+    
+    print(f"   Testing S3 connection to: {s3_endpoint}")
+    try:
+        s3 = boto3.client(
+            "s3",
+            region_name=region,
+            endpoint_url=s3_endpoint,
+            aws_access_key_id="test" if is_local else None,
+            aws_secret_access_key="test" if is_local else None,
+            config=Config(
+                connect_timeout=10,
+                read_timeout=10,
+                retries={'max_attempts': 3}
+            )
+        )
+        # Test connection by listing buckets
+        test_buckets = s3.list_buckets()
+        print(f"   ✓ S3 connection successful! Found {len(test_buckets.get('Buckets', []))} existing buckets")
+    except Exception as e:
+        print(f"   ❌ S3 connection failed: {e}")
+        raise
 
     # Get DynamoDB table names from environment
     table_users = os.getenv("DDB_USERS_TABLE", "Users")
@@ -196,12 +233,15 @@ def main():
     ]
 
     # Create DDB tables and S3 Buckets
+    print(f"\n📦 Creating DynamoDB tables...")
     for table_name in table_names:
         create_dynamodb_table(dynamodb, table_name)
 
+    print(f"\n🪣 Creating S3 buckets...")
     create_s3_bucket(s3, bucket_images, region)
 
-    print("CI infrastructure setup completed successfully!")
+    print(f"\n✅ CI infrastructure setup completed successfully!")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
