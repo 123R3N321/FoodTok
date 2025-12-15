@@ -1,26 +1,21 @@
 from locust import HttpUser, task, between, LoadTestShape
 import logging
 import random
-import string
 
 logging.basicConfig(level=logging.DEBUG)
 
 class FrontendUser(HttpUser):
-    wait_time = between(2, 4)
+    wait_time = between(0.5, 1)
 
-    def on_start(self):
-        """Generate unique user credentials"""
-        random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-        self.firstName = f"Test{random_suffix}"
-        self.lastName = f"User{random_suffix}"
-        self.email = f"testuser_{random_suffix}@test.com"
-        self.password = "TestPassword123!"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.restaurant_ids = [str(i) for i in range(1, 51)]
 
-    @task(1)
+    @task(2)
     def load_home(self):
         self.client.get("/", name="GET /")
 
-    @task(1)
+    @task(2)
     def load_login(self):
         self.client.get("/login", name="GET /login")
 
@@ -28,18 +23,35 @@ class FrontendUser(HttpUser):
     def load_signup(self):
         self.client.get("/signup", name="GET /signup")
 
-    @task(2)
+    @task(3)
+    def load_history(self):
+        self.client.get("/history", name="GET /history")
+
+    @task(4)
+    def load_restaurant_detail(self):
+        restaurant_id = random.choice(self.restaurant_ids)
+        self.client.get(f"/restaurant/{restaurant_id}", name="GET /restaurant/<id>")
+
+    @task(1)
     def load_favorites(self):
-        self.client.get("/favorites", name="GET /favorites", catch_response=True)
+        self.client.get("/favorites", name="GET /favorites")
+
+    @task(1)
+    def load_profile(self):
+        self.client.get("/profile", name="GET /profile")
+
+    @task(1)
+    def load_settings(self):
+        self.client.get("/settings", name="GET /settings")
 
 
 class LoadTestRampUp(LoadTestShape):
     """
-    Ramps up from 1 to 5 users over 15 seconds, then holds for 15 seconds.
+    Ramps up from 1 to 200 users over 60 seconds, holds for 120 seconds.
     """
     stages = [
-        {"duration": 60, "users": 20, "spawn_rate": 0.05},
-        {"duration": 60, "users": 20, "spawn_rate": 1},
+        {"duration": 60, "users": 200, "spawn_rate": 3},
+        {"duration": 120, "users": 200, "spawn_rate": 1},
     ]
 
     def tick(self):
