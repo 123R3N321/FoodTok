@@ -85,7 +85,7 @@ backend-test:
 	cd ecs_app && pytest tests/api/ -v --full-trace
 
 backend-test-coverage:
-	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html
+	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html --cov-report=term
 
 backend-test-no-stack:
 	FOODTOK_SMOKE_MANAGE_STACK=0 pytest ecs_app/tests/api/ -v
