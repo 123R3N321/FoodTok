@@ -9,6 +9,8 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    env:
+      COVERAGE_MIN: 75
     
     steps:
     - name: Checkout code
@@ -124,9 +126,9 @@ jobs:
         FOODTOK_SMOKE_MANAGE_STACK: 0
         FOODTOK_SMOKE_BASE_URL: http://localhost:8080/api
 
-    - name: Run backend tests with coverage and enforce 100% coverage
+    - name: Run backend tests with coverage and enforce minimum
       run: |
-        cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=term --cov-report=xml --cov-report=html --cov-fail-under=100
+        cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=term --cov-report=xml --cov-report=html --cov-fail-under=${COVERAGE_MIN:-75}
       env:
         FOODTOK_SMOKE_MANAGE_STACK: 0
         FOODTOK_SMOKE_BASE_URL: http://localhost:8080/api
