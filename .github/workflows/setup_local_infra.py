@@ -106,29 +106,49 @@ def create_dynamodb_table(dynamodb, table_name: str):
         if not schema:
             raise Exception(f"Unknown table schema for {table_name}")
 
-        existing_tables = dynamodb.meta.client.list_tables()["TableNames"]
-        if table_name in existing_tables:
-            print(f"DynamoDB table '{table_name}' already exists.")
+        # Use a more efficient approach - try to describe the table first
+        # This is faster than listing all tables
+        try:
+            dynamodb.meta.client.describe_table(TableName=table_name)
+            print(f"   ✓ DynamoDB table '{table_name}' already exists.")
             return
+        except ClientError as e:
+            # Table doesn't exist if error code is ResourceNotFoundException
+            if e.response['Error']['Code'] != 'ResourceNotFoundException':
+                raise
 
-        print(f"Creating DynamoDB table: {table_name}")
+        print(f"   Creating DynamoDB table: {table_name}...")
         table = dynamodb.create_table(**schema)
+        # Use a shorter wait timeout since we're creating new tables
         table.wait_until_exists()
-        print(f"DynamoDB table '{table_name}' created successfully.")
+        print(f"   ✓ DynamoDB table '{table_name}' created successfully.")
 
     except ClientError as e:
-        print(f"DynamoDB creation error: {e}")
+        error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+        if error_code == 'ResourceInUseException':
+            print(f"   ✓ DynamoDB table '{table_name}' already exists (race condition).")
+        else:
+            print(f"   ❌ DynamoDB creation error for '{table_name}': {e}")
+            raise
+    except Exception as e:
+        print(f"   ❌ Unexpected error creating table '{table_name}': {e}")
+        raise
 
 
 def create_s3_bucket(s3_client, bucket_name: str, region: str):
     """Create S3 bucket if it doesn't exist."""
     try:
-        buckets = [b["Name"] for b in s3_client.list_buckets().get("Buckets", [])]
-        if bucket_name in buckets:
-            print(f"S3 bucket '{bucket_name}' already exists.")
+        # Try to head the bucket first - faster than listing all buckets
+        try:
+            s3_client.head_bucket(Bucket=bucket_name)
+            print(f"   ✓ S3 bucket '{bucket_name}' already exists.")
             return
+        except ClientError as e:
+            # Bucket doesn't exist if error code is 404
+            if e.response['Error']['Code'] != '404':
+                raise
 
-        print(f"Creating S3 bucket: {bucket_name}")
+        print(f"   Creating S3 bucket: {bucket_name}...")
         if region == "us-east-1":
             s3_client.create_bucket(Bucket=bucket_name)
         else:
@@ -136,9 +156,17 @@ def create_s3_bucket(s3_client, bucket_name: str, region: str):
                 Bucket=bucket_name,
                 CreateBucketConfiguration={"LocationConstraint": region},
             )
-        print(f"S3 bucket '{bucket_name}' created successfully.")
+        print(f"   ✓ S3 bucket '{bucket_name}' created successfully.")
     except ClientError as e:
-        print(f"S3 bucket creation error: {e}")
+        error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+        if error_code == 'BucketAlreadyOwnedByYou':
+            print(f"   ✓ S3 bucket '{bucket_name}' already exists (race condition).")
+        else:
+            print(f"   ❌ S3 bucket creation error for '{bucket_name}': {e}")
+            raise
+    except Exception as e:
+        print(f"   ❌ Unexpected error creating bucket '{bucket_name}': {e}")
+        raise
 
 
 def main():
@@ -166,69 +194,65 @@ def main():
         print("Using AWS production endpoints")
 
     # Initialize ddb client and s3 client
-    print(f"\n🔌 Connecting to services...")
-    print(f"   Testing DynamoDB connection to: {dynamo_endpoint}")
+    print(f"\n🔌 Initializing service clients...")
+    print(f"   DynamoDB endpoint: {dynamo_endpoint}")
+    print(f"   S3 endpoint: {s3_endpoint}")
     
-    try:
-        dynamodb = boto3.resource(
-            "dynamodb",
-            region_name=region,
-            endpoint_url=dynamo_endpoint,
-            aws_access_key_id="test" if is_local else None,
-            aws_secret_access_key="test" if is_local else None,
-            config=Config(
-                connect_timeout=10,
-                read_timeout=10,
-                retries={'max_attempts': 3}
-            )
-        )
-        # Test connection by listing tables
-        test_tables = dynamodb.meta.client.list_tables()
-        print(f"   ✓ DynamoDB connection successful! Found {len(test_tables.get('TableNames', []))} existing tables")
-    except Exception as e:
-        print(f"   ❌ DynamoDB connection failed: {e}")
-        raise
+    # Use longer timeouts for DynamoDB Local which can be slow
+    dynamodb_config = Config(
+        connect_timeout=30,
+        read_timeout=30,
+        retries={'max_attempts': 2, 'mode': 'standard'}
+    )
     
-    print(f"   Testing S3 connection to: {s3_endpoint}")
-    try:
-        s3 = boto3.client(
-            "s3",
-            region_name=region,
-            endpoint_url=s3_endpoint,
-            aws_access_key_id="test" if is_local else None,
-            aws_secret_access_key="test" if is_local else None,
-            config=Config(
-                connect_timeout=10,
-                read_timeout=10,
-                retries={'max_attempts': 3}
-            )
-        )
-        # Test connection by listing buckets
-        test_buckets = s3.list_buckets()
-        print(f"   ✓ S3 connection successful! Found {len(test_buckets.get('Buckets', []))} existing buckets")
-    except Exception as e:
-        print(f"   ❌ S3 connection failed: {e}")
-        raise
+    dynamodb = boto3.resource(
+        "dynamodb",
+        region_name=region,
+        endpoint_url=dynamo_endpoint,
+        aws_access_key_id="test" if is_local else None,
+        aws_secret_access_key="test" if is_local else None,
+        config=dynamodb_config
+    )
+    print(f"   ✓ DynamoDB client initialized")
+    
+    s3_config = Config(
+        connect_timeout=30,
+        read_timeout=30,
+        retries={'max_attempts': 2, 'mode': 'standard'}
+    )
+    
+    s3 = boto3.client(
+        "s3",
+        region_name=region,
+        endpoint_url=s3_endpoint,
+        aws_access_key_id="test" if is_local else None,
+        aws_secret_access_key="test" if is_local else None,
+        config=s3_config
+    )
+    print(f"   ✓ S3 client initialized")
+    
+    # Skip connection test - we know curl works, and list_tables can be slow on DynamoDB Local
+    # We'll test the connection when we actually try to create tables
 
     # Get DynamoDB table names from environment
+    # Match local_config.py behavior, but include Restaurants since tests need it
     table_users = os.getenv("DDB_USERS_TABLE", "Users")
-    table_restaurants = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
+    table_restaurants = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")  # Needed for tests
     table_favorites = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
     table_reservations = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
-    table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
+    # table_user_stats = os.getenv("DDB_USER_STATS_TABLE", "UserStats")  # Not used, commented out like local_config.py
     table_holds = os.getenv("DDB_HOLDS_TABLE", "Holds")
 
     # Get S3 Bucket names
     bucket_images = os.getenv("S3_IMAGES_BUCKET", "foodtok-local-images")
 
-    # Create all tables defined in TABLE_SCHEMAS
-    # (Tests may need all of them, even if local_config.py only creates a subset)
+    # Create tables needed for tests
+    # Matches local_config.py but includes Restaurants (needed by test_urls.py)
     table_names = [
         table_users,
-        table_restaurants,
+        table_restaurants,  # Added: tests need this table
         table_reservations,
         table_favorites,
-        table_user_stats,
         table_holds,
     ]
 
