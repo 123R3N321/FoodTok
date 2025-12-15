@@ -80,11 +80,36 @@ frontend-test-watch:
 	cd FoodTok_Frontend && npm test -- --watch
 
 # ------ Backend Testing ------
+
 backend-test:
-	pytest ecs_app/tests/api/test_urls.py
+	cd ecs_app && pytest tests/api/ -v --full-trace
 
 backend-test-coverage:
-	pytest ecs_app/tests/api/test_urls.py -s
+	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html
+
+backend-test-no-stack:
+	FOODTOK_SMOKE_MANAGE_STACK=0 pytest ecs_app/tests/api/ -v
+
+# ------ Load Testing ------
+
+HOST ?=
+ifeq ($(HOST),)
+	LOAD_TEST_HOST := http://localhost:8000
+else
+	LOAD_TEST_HOST := $(HOST)
+endif
+
+load-test:
+	@echo "Running load test (1-20 users)..."
+	locust -f load_tests/locustfile.py --host=$(LOAD_TEST_HOST) --headless --users 20 --spawn-rate 0.16 --run-time 3m --csv=load_tests/results
+
+load-test-local:
+	@echo "Running load test against local backend..."
+	make load-test HOST=http://localhost:8000
+
+load-test-frontend:
+	@echo "Running frontend load test (1-5 users)..."
+	locust -f load_tests/locustfile.py --host=$(LOAD_TEST_HOST) --headless --users 5 --spawn-rate 0.3 --run-time 30s --csv=load_tests/results
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------

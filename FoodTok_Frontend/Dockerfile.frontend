@@ -16,9 +16,14 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.* ./
+COPY --from=builder /app/jest.config.* ./
+COPY --from=builder /app/src ./src
 
 RUN npm ci --omit=dev
 
 EXPOSE 3000
+
+# Allow Jest to run in production
+ENV NODE_ENV=development
 
 CMD ["npm", "start"]
