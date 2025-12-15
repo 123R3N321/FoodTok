@@ -309,6 +309,30 @@ def test_reservations_user_listing_includes_reservation():
         _cleanup_test_user(user["id"])
 
 
+def test_reservations_detail_returns_payload():
+    _require_backend()
+    user = _signup_test_user("detail")
+    restaurant_id = _ensure_restaurant_via_dynamo(_random_restaurant_payload("detail"))
+    date_str = (datetime.utcnow() + timedelta(days=9)).date().isoformat()
+    time_slot = _pick_time_slot(restaurant_id, date_str)
+    hold = _create_hold_via_api(user["id"], restaurant_id, date_str, time_slot)
+    reservation = _confirm_reservation_via_api(user["id"], hold["holdId"])
+    try:
+        resp = requests.get(
+            f"{BASE_URL}/reservations/{reservation['reservationId']}",
+            timeout=DEFAULT_TIMEOUT,
+        )
+        assert resp.status_code == 200, resp.text
+        payload = resp.json()
+        assert payload.get("reservationId") == reservation["reservationId"]
+        assert payload.get("userId") == user["id"]
+        assert payload.get("restaurantId") == restaurant_id
+    finally:
+        _delete_reservation(reservation["reservationId"])
+        _delete_hold(hold["holdId"])
+        _cleanup_test_user(user["id"])
+
+
 def test_reservations_modify_updates_time():
     _require_backend()
     user = _signup_test_user("modify")
