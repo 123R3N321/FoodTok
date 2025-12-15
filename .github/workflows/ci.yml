@@ -68,28 +68,30 @@ jobs:
           exit 1
         fi
 
-    - name: Install boto3 for setup script
-      run: pip install boto3
-
     - name: Create DynamoDB tables and S3 buckets
       run: |
         echo "Creating DynamoDB tables and S3 buckets..."
-        python .github/workflows/setup_local_infra.py
+        # Run setup script in a container on the same Docker network as other services
+        # This allows it to use service names (dynamo:8000, localstack:4566) instead of localhost
+        docker run --rm \
+          --network localstack-net \
+          -e IS_LOCAL=true \
+          -e AWS_REGION=us-east-1 \
+          -e AWS_ACCESS_KEY_ID=test \
+          -e AWS_SECRET_ACCESS_KEY=test \
+          -e LOCAL_DYNAMO_ENDPOINT=http://dynamo:8000 \
+          -e LOCAL_S3_ENDPOINT=http://localstack:4566 \
+          -e DDB_USERS_TABLE=Users \
+          -e DDB_RESTAURANTS_TABLE=Restaurants \
+          -e DDB_FAVORITES_TABLE=Favorites \
+          -e DDB_RESERVATIONS_TABLE=Reservations \
+          -e DDB_USER_STATS_TABLE=UserStats \
+          -e DDB_HOLDS_TABLE=Holds \
+          -e S3_IMAGES_BUCKET=foodtok-local-images \
+          -v "$PWD/.github/workflows/setup_local_infra.py:/setup.py:ro" \
+          python:3.11-slim \
+          sh -c "pip install -q boto3 && python /setup.py"
         echo "✓ Infrastructure setup complete"
-      env:
-        IS_LOCAL: "true"
-        AWS_REGION: "us-east-1"
-        AWS_ACCESS_KEY_ID: "test"
-        AWS_SECRET_ACCESS_KEY: "test"
-        LOCAL_DYNAMO_ENDPOINT: "http://localhost:8000"
-        LOCAL_S3_ENDPOINT: "http://localhost:4566"
-        DDB_USERS_TABLE: "Users"
-        DDB_RESTAURANTS_TABLE: "Restaurants"
-        DDB_FAVORITES_TABLE: "Favorites"
-        DDB_RESERVATIONS_TABLE: "Reservations"
-        DDB_USER_STATS_TABLE: "UserStats"
-        DDB_HOLDS_TABLE: "Holds"
-        S3_IMAGES_BUCKET: "foodtok-local-images"
 
     - name: Wait for backend to be healthy
       run: |
