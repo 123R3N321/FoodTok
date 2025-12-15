@@ -33,6 +33,51 @@ jobs:
     - name: Start backend services
       run: make backend-up
 
+    - name: Wait for DynamoDB and LocalStack to be healthy
+      run: |
+        echo "Waiting for DynamoDB and LocalStack to be ready..."
+        timeout=60
+        elapsed=0
+        while [ $elapsed -lt $timeout ]; do
+          # Check DynamoDB
+          if curl -f http://localhost:8000 > /dev/null 2>&1; then
+            # Check LocalStack
+            if curl -f http://localhost:4566/_localstack/health > /dev/null 2>&1; then
+              echo "DynamoDB and LocalStack are healthy!"
+              break
+            fi
+          fi
+          echo "Waiting for infrastructure... ($elapsed/$timeout seconds)"
+          sleep 3
+          elapsed=$((elapsed + 3))
+        done
+        if [ $elapsed -ge $timeout ]; then
+          echo "Infrastructure failed to become healthy within $timeout seconds"
+          docker compose -p foodtok-backend -f docker-compose.backend.yml logs
+          exit 1
+        fi
+
+    - name: Install boto3 for setup script
+      run: pip install boto3
+
+    - name: Create DynamoDB tables and S3 buckets
+      run: |
+        python .github/workflows/setup_local_infra.py
+      env:
+        IS_LOCAL: "true"
+        AWS_REGION: "us-east-1"
+        AWS_ACCESS_KEY_ID: "test"
+        AWS_SECRET_ACCESS_KEY: "test"
+        LOCAL_DYNAMO_ENDPOINT: "http://localhost:8000"
+        LOCAL_S3_ENDPOINT: "http://localhost:4566"
+        DDB_USERS_TABLE: "Users"
+        DDB_RESTAURANTS_TABLE: "Restaurants"
+        DDB_FAVORITES_TABLE: "Favorites"
+        DDB_RESERVATIONS_TABLE: "Reservations"
+        DDB_USER_STATS_TABLE: "UserStats"
+        DDB_HOLDS_TABLE: "Holds"
+        S3_IMAGES_BUCKET: "foodtok-local-images"
+
     - name: Wait for backend to be healthy
       run: |
         echo "Waiting for backend services to be ready..."
