@@ -9,7 +9,7 @@ Each section documents the request payload (where applicable) and the key respon
 ---
 
 ## Health Check
-
+ simply ensures the backend is up and running
 ### `GET /helloECS`
 
 **Response**
