@@ -23,7 +23,7 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        cd ecs_app
+        cd FoodTok_Backend
         pip install -r requirements.txt
 
     - name: Prepare local data directories (DynamoDB/LocalStack)
@@ -108,7 +108,7 @@ jobs:
 
     - name: Run backend tests with coverage and enforce minimum
       run: |
-        cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=term --cov-report=xml --cov-report=html --cov-fail-under=${COVERAGE_MIN:-75}
+        cd FoodTok_Backend && pytest tests/api/ -v --cov=. --cov-report=term --cov-report=xml --cov-report=html --cov-fail-under=${COVERAGE_MIN:-75}
       env:
         FOODTOK_SMOKE_MANAGE_STACK: 0
         FOODTOK_SMOKE_BASE_URL: http://localhost:8080/api
@@ -118,7 +118,7 @@ jobs:
       if: always()
       with:
         name: coverage-html-report
-        path: ecs_app/htmlcov/
+        path: FoodTok_Backend/htmlcov/
         retention-days: 7
 
     - name: Show backend logs on failure

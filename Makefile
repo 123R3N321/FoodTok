@@ -9,13 +9,16 @@ endif
 FRONTEND_PROJECT := foodtok-frontend
 BACKEND_PROJECT := foodtok-backend
 
+FRONTEND_DIRECTORY := FoodTok_Frontend
+BACKEND_DIRECTORY := FoodTok_Backend
+
 FRONTEND_FILE := docker-compose.frontend.yml
 BACKEND_FILE := docker-compose.backend.yml
 
 FRONTEND_DC := $(DC) -p $(FRONTEND_PROJECT) -f $(FRONTEND_FILE)
 BACKEND_DC := $(DC) -p $(BACKEND_PROJECT) -f $(BACKEND_FILE)
 
-BACKEND_APP = ecs-app
+BACKEND_APP = backend
 BACKEND_RUN = $(BACKEND_DC) run --rm --no-deps $(BACKEND_APP)
 
 # ---------- Backend targets ----------
@@ -52,7 +55,7 @@ build-all: backend-build frontend-build
 
 up-all: backend-up frontend-up
 
-down-all: backend-down frontend-down
+down-all: frontend-down backend-down
 
 ps-all: backend-ps frontend-ps
 
@@ -71,24 +74,24 @@ ci: backend-build check smoke test
 # ------ Frontend Testing ------
 
 frontend-test:
-	cd FoodTok_Frontend && npm test -- --passWithNoTests
+	cd $(FRONTEND_DIRECTORY) && npm test -- --passWithNoTests
 
 frontend-test-coverage:
-	cd FoodTok_Frontend && npm test -- --coverage --passWithNoTests
+	cd $(FRONTEND_DIRECTORY) && npm test -- --coverage --passWithNoTests
 
 frontend-test-watch:
-	cd FoodTok_Frontend && npm test -- --watch
+	cd $(FRONTEND_DIRECTORY) && npm test -- --watch
 
 # ------ Backend Testing ------
 
 backend-test:
-	cd ecs_app && pytest tests/api/ -v --full-trace
+	cd $(BACKEND_DIRECTORY) && pytest tests/api/ -v --full-trace
 
 backend-test-coverage:
-	cd ecs_app && pytest tests/api/ -v --cov=. --cov-report=html --cov-report=term
+	cd $(BACKEND_DIRECTORY) && pytest tests/api/ -v --cov=. --cov-report=html --cov-report=term
 
 backend-test-no-stack:
-	FOODTOK_SMOKE_MANAGE_STACK=0 pytest ecs_app/tests/api/ -v
+	FOODTOK_SMOKE_MANAGE_STACK=0 pytest $(BACKEND_DIRECTORY)/tests/api/ -v
 
 # ------ Load Testing ------
 
@@ -119,27 +122,6 @@ PROFILE ?= default
 # Default target
 all: deploy
 
-# ---------------------------
-# Lambda-only Deployment
-# ---------------------------
-
-# Update Lambda function code without redeploying entire stack
-update-lambda:
-	@echo "Packaging and updating Lambda code..."
-	cd cdk/lambda && zip -r ../../lambda.zip . > /dev/null
-	LAMBDA_NAME=$$(aws cloudformation describe-stack-resources \
-		--stack-name $(APP_NAME) \
-		--query "StackResources[?ResourceType=='AWS::Lambda::Function'].PhysicalResourceId" \
-		--output text --profile $(PROFILE) | grep LambdaConstruct | awk '{print $$NF}'); \
-	echo "Uploading latest code to $$LAMBDA_NAME..."; \
-	aws lambda update-function-code \
-		--function-name $$LAMBDA_NAME \
-		--zip-file fileb://lambda.zip \
-		--region $(AWS_REGION) \
-		--profile $(PROFILE) > /dev/null; \
-	rm lambda.zip; \
-	echo "Lambda function updated successfully."
-
 
 # ---------------------------
 # Setup and Installation
@@ -164,19 +146,6 @@ synth:
 deploy:
 	@echo "Deploying stack $(APP_NAME)..."
 	$(CDK_CMD) deploy $(APP_NAME) --require-approval never --profile $(PROFILE)
-
-	@echo "Running Lambda test-runner (currently only E2E)..."
-	FN_NAME=$$(aws cloudformation list-exports --profile $(PROFILE) \
-	  --query "Exports[?Name=='$(PROJECT_PREFIX)-TestRunnerFnName'].Value | [0]" --output text); \
-	if [ -z "$$FN_NAME" ] || [ "$$FN_NAME" = "None" ]; then \
-	  echo "ERROR: Could not find export $(PROJECT_PREFIX)-TestRunnerFnName. Did you add CfnOutput and deploy?"; \
-	  exit 1; \
-	fi; \
-	echo "Invoking $$FN_NAME..."; \
-	aws lambda invoke --function-name $$FN_NAME --profile $(PROFILE) --cli-binary-format raw-in-base64-out \
-	  --payload '{}' ./tests/test-output.json >/dev/null; \
-	echo "Lambda returned (stored in test-output.json in project root dir):"; \
-	cat ./test-output.json | jq .
 
 # ---------------------------
 # verification: can also manually run from tests/run_api_from_test_output.py

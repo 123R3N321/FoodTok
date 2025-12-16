@@ -25,3 +25,4 @@ networks:
   localstack-net:
     name: localstack-net
     driver: bridge
+    external: true

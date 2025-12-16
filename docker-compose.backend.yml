@@ -46,11 +46,11 @@ services:
     networks:
       - localstack-net
 
-  ecs-app:
+  backend:
     build:
-      context: ./ecs_app               
+      context: ./FoodTok_Backend             
       dockerfile: Dockerfile.backend
-    container_name: ecs-app
+    container_name: backend
     environment:
       - IS_LOCAL=true
       - AWS_ACCESS_KEY_ID=test
@@ -79,7 +79,7 @@ services:
 
   local_config:
     build:
-      context: ./ecs_app/local_build
+      context: ./FoodTok_Backend/local_build
       dockerfile: Dockerfile.local_config
     container_name: local_config
     environment:
