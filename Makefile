@@ -107,9 +107,6 @@ load-test-local:
 	@echo "Running load test against local backend..."
 	make load-test HOST=http://localhost:8000
 
-load-test-frontend:
-	@echo "Running frontend load test (1-5 users)..."
-	locust -f load_tests/locustfile.py --host=$(LOAD_TEST_HOST) --headless --users 5 --spawn-rate 0.3 --run-time 30s --csv=load_tests/results
 # ---------------------------
 # AWS CDK Project Makefile
 # ---------------------------
@@ -211,10 +208,12 @@ clean:
 
 help:
 	@echo "Available commands:"
-	@echo "  make install     	- Install dependencies"
-	@echo "  make bootstrap   	- Bootstrap CDK environment"
-	@echo "  make synth       	- Synthesize CloudFormation template"
-	@echo "  make deploy      	- Deploy the stack, run e2e test with cognito"
-	@echo "  make destroy     	- Destroy the stack"
-	@echo "  make clean       	- Remove local build artifacts"
-	@echo "  make update_lambda	- Remove local build artifacts"
+	@echo "  make install                - Install dependencies"
+	@echo "  make bootstrap              - Bootstrap CDK environment"
+	@echo "  make synth                  - Synthesize CloudFormation template"
+	@echo "  make deploy                 - Deploy the stack"
+	@echo "  make deploy-test            - Deploy stack and run load test"
+	@echo "  make deploy-test-destroy    - Deploy, test, and destroy"
+	@echo "  make destroy                - Destroy the stack"
+	@echo "  make clean                  - Remove local build artifacts"
+	@echo "  make load-test-local        - Run load test on local backend"
