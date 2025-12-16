@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COVERAGE_MIN: 75
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     
     steps:
     - name: Checkout code
@@ -43,80 +42,60 @@ jobs:
 
     - name: Wait for infrastructure services to be ready
       run: |
-        echo "Waiting for DynamoDB and LocalStack to be ready..."
-        # Give services time to start
         sleep 10
-        
         timeout=60
         elapsed=0
         while [ $elapsed -lt $timeout ]; do
-          # Check DynamoDB - it returns 400 for empty requests which means it's up
           dynamo_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 2>/dev/null || echo "000")
-          # Check LocalStack health endpoint  
           localstack_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:4566/_localstack/health 2>/dev/null || echo "000")
           
           if [ "$dynamo_code" = "400" ] && [ "$localstack_code" = "200" ]; then
-            echo "✓ DynamoDB and LocalStack are ready!"
             break
           fi
           
-          echo "Waiting... (DynamoDB: $dynamo_code, LocalStack: $localstack_code) - ${elapsed}s/${timeout}s"
           sleep 3
           elapsed=$((elapsed + 3))
         done
         
         if [ $elapsed -ge $timeout ]; then
-          echo "❌ Infrastructure failed to become ready"
-          echo "Service status:"
+          echo "Infrastructure failed to become ready"
           docker compose -p foodtok-backend -f docker-compose.backend.yml ps
-          echo "DynamoDB logs:"
           docker compose -p foodtok-backend -f docker-compose.backend.yml logs dynamo --tail=20
-          echo "LocalStack logs:"
           docker compose -p foodtok-backend -f docker-compose.backend.yml logs localstack --tail=20
           exit 1
         fi
 
-    - name: Initialize DynamoDB tables and S3 buckets (local_config)
+    - name: Initialize DynamoDB tables and S3 buckets
       run: |
-        echo "Initializing DynamoDB tables and S3 buckets via local_config service..."
-        # Wait a bit for services to settle
         sleep 5
-        # Run the same setup used locally via docker-compose service
         docker compose -p foodtok-backend -f docker-compose.backend.yml run --rm --no-deps local_config
-        echo "✓ Infrastructure setup complete"
 
     - name: Wait for backend to be healthy
       run: |
-        echo "Waiting for backend services to be ready..."
         timeout=60
         elapsed=0
         while [ $elapsed -lt $timeout ]; do
           if curl -f http://localhost:8080/api/helloECS > /dev/null 2>&1; then
-            echo "Backend is healthy!"
             break
           fi
-          echo "Waiting for backend... ($elapsed/$timeout seconds)"
           sleep 3
           elapsed=$((elapsed + 3))
         done
         if [ $elapsed -ge $timeout ]; then
-          echo "Backend failed to become healthy within $timeout seconds"
+          echo "Backend failed to become healthy"
           docker compose -p foodtok-backend -f docker-compose.backend.yml logs
           exit 1
         fi
 
     - name: Wait for seed data
       run: |
-        echo "Waiting for seed data to be available..."
         timeout=60
         elapsed=0
         while [ $elapsed -lt $timeout ]; do
           response=$(curl -s http://localhost:8080/api/restaurants || echo "")
           if [ -n "$response" ] && echo "$response" | grep -q "restaurantId"; then
-            echo "Seed data is available!"
             break
           fi
-          echo "Waiting for seed data... ($elapsed/$timeout seconds)"
           sleep 3
           elapsed=$((elapsed + 3))
         done
@@ -141,16 +120,6 @@ jobs:
         name: coverage-html-report
         path: ecs_app/htmlcov/
         retention-days: 7
-
-    - name: Upload coverage reports (Codecov)
-      if: always() && env.CODECOV_TOKEN != ''
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./ecs_app/coverage.xml
-        flags: backend
-        name: backend-coverage
-        token: ${{ env.CODECOV_TOKEN }}
-        fail_ci_if_error: false
 
     - name: Show backend logs on failure
       if: failure()
