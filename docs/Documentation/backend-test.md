@@ -8,10 +8,10 @@ Before running backend tests, ensure:
 
 - Docker and Docker Compose are installed
 - Python 3.11+ is available
-- Backend dependencies are installed (`pip install -r ecs_app/requirements.txt`)
+- Backend dependencies are installed (`pip install -r FoodTok_Backend/requirements.txt`)
 - The backend services are built (`make backend-build`)
 - The backend services are running (`make backend-up`)
-    - if you run `docker ps`, you should see four containers: ecs-app, dynamodb-admin, localstack, and dynamo 
+    - if you run `docker ps`, you should see four containers: backend, dynamodb-admin, localstack, and dynamo 
     - to take down the backend, run `make down-all` or `make down-backend`
 
 > **Note:** Tests connect to the backend API running in Docker containers, but pytest itself runs on the host machine.
@@ -39,7 +39,7 @@ make backend-test
 ```
 
 Runs the pytest suite with verbose output and full traceback on failures.  
-Tests are located in `ecs_app/tests/api/test_urls.py`.
+Tests are located in `FoodTok_Backend/tests/api/test_urls.py`.
 
 ### Run backend tests with coverage
 
@@ -48,7 +48,7 @@ make backend-test-coverage
 ```
 
 Runs the pytest suite and generates HTML and terminal coverage reports.  
-Coverage reports are saved to `ecs_app/htmlcov/` for detailed analysis.
+Coverage reports are saved to `FoodTok_Backend/htmlcov/` for detailed analysis.
 
 ### Run backend tests without managing Docker stack
 
@@ -61,7 +61,7 @@ Useful when you've manually started services and want to run tests multiple time
 
 ## Tested APIs
 
-The test suite exercises the following API endpoints. For detailed request/response schemas and payload examples, see [ENDPOINT_SCHEMAS.md](ecs_app/tests/api/ENDPOINT_SCHEMAS.md).
+The test suite exercises the following API endpoints. For detailed request/response schemas and payload examples, see [ENDPOINT_SCHEMAS.md](FoodTok_Backend/tests/api/ENDPOINT_SCHEMAS.md).
 
 > **Note:** The `ENDPOINT_SCHEMAS.md` file serves as the **source of truth** for API contract documentation. The test suite (`test_urls.py`) uses this documentation to ensure tests align with expected request/response structures. When API contracts change, both the implementation and this schema documentation should be updated to maintain consistency.
 
@@ -106,7 +106,7 @@ Coverage reports include:
 - Function coverage
 - Line coverage
 
-HTML coverage reports are generated in `ecs_app/htmlcov/` and can be viewed locally or downloaded as CI artifacts.
+HTML coverage reports are generated in `FoodTok_Backend/htmlcov/` and can be viewed locally or downloaded as CI artifacts.
 
 ## Test Execution Flow
 

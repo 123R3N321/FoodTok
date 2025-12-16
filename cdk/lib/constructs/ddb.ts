@@ -8,10 +8,8 @@ export interface DdbProps {
 
 export class DdbConstruct extends Construct {
   public readonly users: Table;
-  //public readonly restaurants: Table;
   public readonly favorites: Table;
   public readonly reservations: Table;
-  //public readonly userStats: Table;
   public readonly holds: Table;
 
   constructor(scope: Construct, id: string, props: DdbProps) {
@@ -24,18 +22,8 @@ export class DdbConstruct extends Construct {
       tableName: `${props.projectPrefix}-Users`,
       partitionKey: { name: 'userId', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
     });
-
-    // ------------------------------
-    // Restaurants Table
-    // ------------------------------
-    //this.restaurants = new Table(this, `${props.projectPrefix}-Restaurants`, {
-    //  tableName: `${props.projectPrefix}-Restaurants`,
-    //  partitionKey: { name: 'id', type: AttributeType.STRING },
-    //  billingMode: BillingMode.PAY_PER_REQUEST,
-    //  removalPolicy: RemovalPolicy.DESTROY,
-    //});
 
     // ------------------------------
     // Favorites Table
@@ -45,7 +33,7 @@ export class DdbConstruct extends Construct {
       partitionKey: { name: "userId", type: AttributeType.STRING },
       sortKey: { name: "restaurantId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
     });
 
     // ------------------------------
@@ -55,7 +43,7 @@ export class DdbConstruct extends Construct {
       tableName: `${props.projectPrefix}-Reservations`,
       partitionKey: { name: "reservationId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
     });
 
     this.reservations.addGlobalSecondaryIndex({
@@ -66,23 +54,13 @@ export class DdbConstruct extends Construct {
     });
 
     // ------------------------------
-    // UserStats Table
-    // ------------------------------
-    //this.userStats = new Table(this, `${props.projectPrefix}-UserStats`, {
-    //  tableName: `${props.projectPrefix}-UserStats`,
-    //  partitionKey: { name: "userId", type: AttributeType.STRING },
-    //  billingMode: BillingMode.PAY_PER_REQUEST,
-    //  removalPolicy: RemovalPolicy.DESTROY,
-    //});
-
-    // ------------------------------
     // Holds Table
     // ------------------------------
     this.holds = new Table(this, `${props.projectPrefix}-Holds`, {
       tableName: `${props.projectPrefix}-Holds`,
       partitionKey: { name: "holdId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
     });
   }
 }

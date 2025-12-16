@@ -9,10 +9,8 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 interface BackendECSProps {
   users: Table;
-  //restaurants: Table;
   favorites: Table;
   reservations: Table;
-  //userStats: Table;
   holds: Table;
   imageBucket: Bucket;
   projectPrefix: string; 
@@ -43,7 +41,7 @@ export class BackendECSConstruct extends Construct {
     });
 
     const container = taskDef.addContainer(`${props.projectPrefix}-Container`, {
-      image: ContainerImage.fromAsset('./ecs_app', {
+      image: ContainerImage.fromAsset('./FoodTok_Backend', {
         file: 'Dockerfile.backend',
         platform: Platform.LINUX_AMD64,
       }), 
@@ -93,10 +91,8 @@ export class BackendECSConstruct extends Construct {
 
     // Grant ECS Task IAM permissions
     props.users.grantReadWriteData(taskDef.taskRole);
-    //props.restaurants.grantReadWriteData(taskDef.taskRole);
     props.favorites.grantReadWriteData(taskDef.taskRole);
     props.reservations.grantReadWriteData(taskDef.taskRole);
-    //props.userStats.grantReadWriteData(taskDef.taskRole);
     props.holds.grantReadWriteData(taskDef.taskRole);
 
     props.imageBucket.grantReadWrite(taskDef.taskRole);

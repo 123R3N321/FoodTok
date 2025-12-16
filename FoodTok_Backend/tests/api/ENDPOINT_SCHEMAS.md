@@ -1,6 +1,6 @@
 # API Smoke-Tested Endpoint Schemas
 
-The smoke-test suite under `ecs_app/tests/api/test_urls.py` exercises the endpoints listed below.  
+The smoke-test suite under `FoodTok_Backend/tests/api/test_urls.py` exercises the endpoints listed below.  
 Each section documents the request payload (where applicable) and the key response fields that the tests assert on.
 
 > **Base URL:** `http://localhost:8080/api`
@@ -407,5 +407,5 @@ All reservation tests operate on synthetic restaurants and short-lived users to 
 
 ---
 
-For the most accurate structures, refer to the implementation in `ecs_app/api/views.py`, but the payloads above capture the fields asserted in the smoke tests and the minimum required to exercise each endpoint.
+For the most accurate structures, refer to the implementation in `FoodTok_Backend/api/views.py`, but the payloads above capture the fields asserted in the smoke tests and the minimum required to exercise each endpoint.
 
