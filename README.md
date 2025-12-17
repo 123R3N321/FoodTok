@@ -22,7 +22,7 @@ The stack uses Docker Compose with orchestrated targets in the `Makefile` to man
 
 **Running the Full Stack**
 
-Once running, the backend API is available at `http://localhost:8080` and the frontend is served at `http://localhost:3000`.
+Once running, the backend API is available at `http://localhost:8080` and the frontend is served at `http://localhost:3000`. DynamoDB Admin GUI is being served at `http://localhost:8001`.
 
 - `make build-all` — build both backend and frontend images.
 - `make up-all` — start the complete stack.
