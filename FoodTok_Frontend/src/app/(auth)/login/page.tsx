@@ -156,13 +156,10 @@ export default function LoginPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Demo Credentials</span>
               </div>
             </div>
             
             <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-              <p>Email: john@example.com</p>
-              <p>Password: password123</p>
             </div>
           </div>
         </CardContent>
