@@ -5,16 +5,6 @@ from . import views
 urlpatterns = [
     # Health check endpoint
     path("helloECS", views.hello_ecs, name="hello-ecs"),
-
-    # Legacy test endpoints
-    #path("uploadECS", views.upload_file),
-    #path("downloadECS/<str:filename>", views.download_file),
-
-    # Restaurant endpoints
-    #path("restaurants/discovery", views.discover_restaurants, name="restaurant-discovery"),
-    #path("restaurants/search", views.search_restaurants, name="restaurant-search"),
-    #path("restaurants/<str:restaurant_id>", views.get_restaurant_detail, name="restaurant-detail"),
-    #path("restaurants", views.get_restaurants, name="restaurants-list"),
     
     # Auth endpoints
     path("auth/login", views.login, name="auth-login"),
@@ -27,7 +17,6 @@ urlpatterns = [
     path("favorites/check", views.check_favorite, name="favorites-check"),
     path("favorites/<str:user_id>", views.get_favorites, name="favorites-list"),
     path("favorites", views.favorites_handler, name="favorites-add"),
-    #path("stats/<str:user_id>", views.get_user_stats, name="user-stats"),
     
     # Reservation endpoints
     path("reservations/availability", views.check_availability, name="reservation-availability"),

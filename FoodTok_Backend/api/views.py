@@ -24,10 +24,8 @@ LOCAL_S3_ENDPOINT = os.getenv("LOCAL_S3_ENDPOINT")
 BUCKET_IMAGES = os.getenv("S3_IMAGE_BUCKET", "foodtok-local-images")
 
 TABLE_USERS = os.getenv("DDB_USERS_TABLE", "Users")
-#TABLE_RESTAURANTS = os.getenv("DDB_RESTAURANTS_TABLE", "Restaurants")
 TABLE_FAVORITES = os.getenv("DDB_FAVORITES_TABLE", "Favorites")
 TABLE_RESERVATIONS = os.getenv("DDB_RESERVATIONS_TABLE", "Reservations")
-#TABLE_USER_STATS = os.getenv("DDB_USER_STATS_TABLE", "UserStats")
 TABLE_HOLDS = os.getenv("DDB_HOLDS_TABLE", "Holds")
 
 dynamodb = get_dynamodb()
@@ -76,304 +74,11 @@ def convert_price_to_int(price_value):
 def hello_ecs(request):
     return Response({"status": "healthy"}, status=200)
 
-""" 
-# ----------------------------------------------------
-# api/uploadECS
-# ----------------------------------------------------
-@api_view(["POST"])
-def upload_file(request):
-    try:
-        file_name = f"sample_{uuid.uuid4().hex[:8]}.txt"
-        contents = f"Hello from Django ECS! {uuid.uuid4()}"
-
-        # Upload to S3
-        s3.upload_fileobj(BytesIO(contents.encode()), BUCKET_IMAGES, file_name)
-
-        file_url = (
-            f"{LOCAL_S3_ENDPOINT}/{BUCKET_IMAGES}/{file_name}" if IS_LOCAL
-            else f"https://{BUCKET_IMAGES}.s3.amazonaws.com/{file_name}"
-        )
-
-        return Response({
-            "message": "File uploaded!",
-            "file_name": file_name,
-            "file_url": file_url,
-        }, status=200)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
-
-# ----------------------------------------------------
-# api/downloadECS/<filename>
-# ----------------------------------------------------
-@api_view(["GET"])
-def download_file(request, filename):
-    try:
-        obj = s3.get_object(Bucket=BUCKET_IMAGES, Key=filename)
-        data = obj["Body"].read().decode("utf-8")
-
-        return Response({"file_name": filename, "content": data}, status=200)
-
-    except s3.exceptions.NoSuchKey:
-        return Response({"error": f"File '{filename}' not found"}, status=404)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
-# ----------------------------------------------------
-# api/restaurants
-# ----------------------------------------------------
-@api_view(["GET"])
-def get_restaurants(request):
-    try:
-        table = dynamodb.Table(TABLE_RESTAURANTS)
-        response = table.scan()
-
-        items = response.get("Items", [])
-        return JsonResponse(items, safe=False, status=200)
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-"""
-
-"""
-# ----------------------------------------------------
-# api/restaurants/discovery - Personalized feed
-# ----------------------------------------------------
-@api_view(["GET"])
-def discover_restaurants(request):
-    try:
-        user_id = request.GET.get("userId")
-        limit = int(request.GET.get("limit", 10))
-        
-        if not user_id:
-            return Response({"error": "userId query parameter required"}, status=400)
-        
-        # Get user preferences
-        users_table = dynamodb.Table(TABLE_USERS)
-        user_response = users_table.get_item(Key={"userId": user_id})
-        user = user_response.get("Item", {})
-        
-        # Get user preferences or use defaults
-        user_preferences = user.get("preferences", {})
-        preferred_cuisines = user_preferences.get("cuisines", [])
-        preferred_price = user_preferences.get("priceRange", [1, 2, 3, 4])
-        dietary_restrictions = user_preferences.get("dietaryRestrictions", [])
-        
-        # Get all restaurants
-        restaurants_table = dynamodb.Table(TABLE_RESTAURANTS)
-        response = restaurants_table.scan()
-        restaurants = response.get("Items", [])
-        
-        # Calculate match scores
-        scored_restaurants = []
-        for restaurant in restaurants:
-            score = calculate_match_score(
-                restaurant,
-                preferred_cuisines,
-                preferred_price,
-                dietary_restrictions
-            )
-            
-            # Add match data
-            restaurant["matchScore"] = score["score"]
-            restaurant["matchReasons"] = score["reasons"]
-            scored_restaurants.append(restaurant)
-        
-        # Sort by match score (highest first)
-        scored_restaurants.sort(key=lambda x: x["matchScore"], reverse=True)
-        
-        # Return top N results
-        return Response({
-            "userId": user_id,
-            "restaurants": scored_restaurants[:limit],
-            "total": len(scored_restaurants)
-        }, status=200)
-        
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-"""
-
-def calculate_match_score(restaurant, preferred_cuisines, preferred_price, dietary_restrictions):
-    """
-    Calculate match score (0-100) based on user preferences.
-    
-    Scoring breakdown:
-    - Cuisine match: 40 points
-    - Price match: 30 points
-    - Dietary options: 20 points
-    - Base popularity (rating): 10 points
-    """
-    score = 0
-    reasons = []
-    
-    # 1. Cuisine matching (40 points)
-    restaurant_cuisines = restaurant.get("cuisine", [])
-    if isinstance(restaurant_cuisines, str):
-        restaurant_cuisines = [restaurant_cuisines]
-    
-    if preferred_cuisines:
-        cuisine_matches = [c for c in restaurant_cuisines if c in preferred_cuisines]
-        if cuisine_matches:
-            score += 40
-            reasons.append(f"Loves {cuisine_matches[0]}")
-        else:
-            score += 10  # Some points for trying new cuisines
-    else:
-        score += 20  # No preference = neutral
-    
-    # 2. Price range matching (30 points)
-    restaurant_price = restaurant.get("priceRange", 2)
-    
-    # Convert $$ format to numeric if needed
-    if isinstance(restaurant_price, str):
-        restaurant_price = len(restaurant_price)
-    
-    if restaurant_price in preferred_price:
-        score += 30
-        price_labels = {1: "Budget-friendly", 2: "Moderate", 3: "Upscale", 4: "Fine dining"}
-        reasons.append(price_labels.get(restaurant_price, "Good value"))
-    else:
-        # Partial points if close
-        if any(abs(restaurant_price - p) == 1 for p in preferred_price):
-            score += 15
-    
-    # 3. Dietary options (20 points)
-    restaurant_dietary = restaurant.get("dietaryOptions", [])
-    if dietary_restrictions:
-        matches = [d for d in dietary_restrictions if d in restaurant_dietary]
-        if matches:
-            score += 20
-            reasons.append(f"Has {matches[0]} options")
-        elif not restaurant_dietary:
-            score += 5  # Some points if no restrictions
-    else:
-        score += 10  # No dietary restrictions = partial points
-    
-    # 4. Base popularity from rating (10 points)
-    rating = float(restaurant.get("rating", 0))
-    score += min(10, int(rating * 2))  # 5.0 rating = 10 points
-    
-    # Add high rating to reasons if 4.5+
-    if rating >= 4.5:
-        reasons.append(f"Highly rated ({rating}★)")
-    
-    return {
-        "score": min(100, score),  # Cap at 100
-        "reasons": reasons[:3]  # Top 3 reasons
-    }
-
-"""
-# ----------------------------------------------------
-# api/restaurants/<id> - Single restaurant detail
-# ----------------------------------------------------
-@api_view(["GET"])
-def get_restaurant_detail(request, restaurant_id):
-    try:
-        table = dynamodb.Table(TABLE_RESTAURANTS)
-        response = table.get_item(Key={"id": restaurant_id})
-        
-        item = response.get("Item")
-        if not item:
-            return Response(
-                {"error": f"Restaurant with id '{restaurant_id}' not found"},
-                status=404
-            )
-        
-        return Response(item, status=200)
-        
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-"""
-
-"""
-# ----------------------------------------------------
-# api/restaurants/search - Filtered search
-# ----------------------------------------------------
-@api_view(["GET"])
-def search_restaurants(request):
-    try:
-        # Parse query parameters
-        cuisine = request.GET.get("cuisine")
-        price_range_str = request.GET.get("priceRange")
-        min_rating = request.GET.get("minRating")
-        city = request.GET.get("city")
-        limit = int(request.GET.get("limit", 20))
-        
-        # Get all restaurants (DynamoDB scan)
-        table = dynamodb.Table(TABLE_RESTAURANTS)
-        response = table.scan()
-        restaurants = response.get("Items", [])
-        
-        # Apply filters
-        filtered = restaurants
-
-        # Filter by cuisine
-        if cuisine:
-            cuisine_lower = cuisine.lower()
-            filtered = [
-                r for r in filtered
-                if any(
-                    cuisine_lower in c.lower()
-                    for c in (r.get("cuisine", []) if isinstance(r.get("cuisine"), list) else [r.get("cuisine", "")])
-                )
-            ]
-        
-        # Filter by price range
-        if price_range_str:
-            try:
-                price_ranges = [int(p.strip()) for p in price_range_str.split(",")]
-                filtered = [
-                    r for r in filtered
-                    if convert_price_to_int(r.get("priceRange", 2)) in price_ranges
-                ]
-            except ValueError:
-                return Response({"error": "Invalid priceRange format. Use comma-separated numbers (1-4)."}, status=400)
-        
-        # Filter by minimum rating
-        if min_rating:
-            try:
-                min_rating_float = float(min_rating)
-                filtered = [
-                    r for r in filtered
-                    if float(r.get("rating", 0)) >= min_rating_float
-                ]
-            except ValueError:
-                return Response({"error": "Invalid minRating format. Use decimal (e.g., 4.0)."}, status=400)
-        
-        # Filter by city
-        if city:
-            city_lower = city.lower()
-            filtered = [
-                r for r in filtered
-                if city_lower in r.get("location", {}).get("city", "").lower()
-            ]
-        
-        # Sort by rating (highest first)
-        filtered.sort(key=lambda x: float(x.get("rating", 0)), reverse=True)
-        
-        # Limit results
-        filtered = filtered[:limit]
-        
-        return Response({
-            "restaurants": filtered,
-            "total": len(filtered),
-            "filters": {
-                "cuisine": cuisine,
-                "priceRange": price_range_str,
-                "minRating": min_rating,
-                "city": city
-            }
-        }, status=200)
-        
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-"""
 
 # ============================================================
 # AUTHENTICATION ENDPOINTS
 # ============================================================
+
 
 @api_view(["POST"])
 def login(request):
@@ -691,6 +396,8 @@ def change_password(request):
 # ============================================================
 # RESERVATION ENDPOINTS
 # ============================================================
+
+
 @api_view(["POST"])
 def check_availability(request):
     """
@@ -1507,40 +1214,77 @@ def check_favorite(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-"""
-# ============================================================================
-# USER STATS ENDPOINTS
-# ============================================================================
 
-@api_view(["GET"])
-def get_user_stats(request, user_id):
-    try:        
-        stats_table = dynamodb.Table(TABLE_USER_STATS)
-        
-        response = stats_table.get_item(Key={'userId': user_id})
-        
-        if 'Item' not in response:
-            # Return zeros if no stats yet
-            return JsonResponse({
-                'totalLikes': 0,
-                'totalReservations': 0,
-                'accountAge': 0,
-                'topCuisines': [],
-                'lastActive': None
-            })
-        
-        stats = response['Item']
-        
-        # Convert Decimals to regular numbers
-        return JsonResponse({
-            'totalLikes': int(stats.get('totalLikes', 0)),
-            'totalReservations': int(stats.get('totalReservations', 0)),
-            'accountAge': int(stats.get('accountAge', 0)),
-            'topCuisines': stats.get('topCuisines', []),
-            'lastActive': stats.get('lastActive')
-        })
-        
-    except Exception as e:
-        print(f"Error fetching user stats: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
-"""
+# ----------------------------------------------------
+# DISCOVERY / MATCH SCORE LOGIC
+# ----------------------------------------------------
+
+
+def calculate_match_score(restaurant, preferred_cuisines, preferred_price, dietary_restrictions):
+    """
+    Calculate match score (0-100) based on user preferences.
+    
+    Scoring breakdown:
+    - Cuisine match: 40 points
+    - Price match: 30 points
+    - Dietary options: 20 points
+    - Base popularity (rating): 10 points
+    """
+    score = 0
+    reasons = []
+    
+    # 1. Cuisine matching (40 points)
+    restaurant_cuisines = restaurant.get("cuisine", [])
+    if isinstance(restaurant_cuisines, str):
+        restaurant_cuisines = [restaurant_cuisines]
+    
+    if preferred_cuisines:
+        cuisine_matches = [c for c in restaurant_cuisines if c in preferred_cuisines]
+        if cuisine_matches:
+            score += 40
+            reasons.append(f"Loves {cuisine_matches[0]}")
+        else:
+            score += 10  # Some points for trying new cuisines
+    else:
+        score += 20  # No preference = neutral
+    
+    # 2. Price range matching (30 points)
+    restaurant_price = restaurant.get("priceRange", 2)
+    
+    # Convert $$ format to numeric if needed
+    if isinstance(restaurant_price, str):
+        restaurant_price = len(restaurant_price)
+    
+    if restaurant_price in preferred_price:
+        score += 30
+        price_labels = {1: "Budget-friendly", 2: "Moderate", 3: "Upscale", 4: "Fine dining"}
+        reasons.append(price_labels.get(restaurant_price, "Good value"))
+    else:
+        # Partial points if close
+        if any(abs(restaurant_price - p) == 1 for p in preferred_price):
+            score += 15
+    
+    # 3. Dietary options (20 points)
+    restaurant_dietary = restaurant.get("dietaryOptions", [])
+    if dietary_restrictions:
+        matches = [d for d in dietary_restrictions if d in restaurant_dietary]
+        if matches:
+            score += 20
+            reasons.append(f"Has {matches[0]} options")
+        elif not restaurant_dietary:
+            score += 5  # Some points if no restrictions
+    else:
+        score += 10  # No dietary restrictions = partial points
+    
+    # 4. Base popularity from rating (10 points)
+    rating = float(restaurant.get("rating", 0))
+    score += min(10, int(rating * 2))  # 5.0 rating = 10 points
+    
+    # Add high rating to reasons if 4.5+
+    if rating >= 4.5:
+        reasons.append(f"Highly rated ({rating}★)")
+    
+    return {
+        "score": min(100, score),  # Cap at 100
+        "reasons": reasons[:3]  # Top 3 reasons
+    }
