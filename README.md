@@ -1,52 +1,55 @@
 # FoodTok
 
-FoodTok pairs a Next.js frontend with a Django backend to deliver food discovery and reservations. Docker Compose (orchestrated via the primary `Makefile`) runs the stack locally, while AWS CDK deploys all infrastructure programmatically.
+FoodTok is a full-stack web application that enables users to discover restaurants, save favorites, and manage reservations all in one place. The application is built with a Next.js frontend and Django backend, orchestrated locally via Docker Compose and the primary `Makefile`, while AWS CDK handles programmatic infrastructure deployment to the cloud.
 
 ## Prerequisites
 - Docker (20+ recommended)
 - Docker Compose (bundled with recent Docker Desktop/CLI)
 - GNU Make
 - AWS CLI configured with credentials/region for cloud deploys
-
-## Local Development
-The stack now uses separate Compose files for backend and frontend (`docker-compose.backend.yml` and `docker-compose.frontend.yml`). Targets are split accordingly in the `Makefile`.
-
-**Backend (Django + LocalStack/DynamoDB)**
-- `make backend-build` — build backend images.
-- `make backend-up` — start backend stack (API at `http://localhost:8080`).
-- `make backend-down` — stop backend stack and remove volumes.
-- `make backend-ps` — list backend containers.
-
-**Frontend (Next.js)**
-- `make frontend-build` — build the frontend image.
-- `make frontend-up` — start the frontend (served at `http://localhost:3000`, expects backend on 8080).
-- `make frontend-down` — stop the frontend and remove volumes.
-- `make frontend-ps` — list frontend containers.
-- Frontend needs a `.env` in `FoodTok_Frontend/` before running. Suggested defaults:
+- **Frontend Environment Configuration**: Create a `.env` file in `FoodTok_Frontend/` with the following structure:
   ```
-  NEXT_PUBLIC_API_URL=http://localhost:8080/api
+  BACKEND_API_URL=http://backend:8080/api
   NEXT_PUBLIC_USE_MOCKS=false
   NEXT_PUBLIC_RESTAURANT_SOURCE=yelp
-  NEXT_PUBLIC_YELP_CLIENT_ID=
-  YELP_API_KEY=
+  NEXT_PUBLIC_YELP_CLIENT_ID=your_yelp_client_id
+  YELP_API_KEY=your_yelp_api_key
   ```
-  Get a Public Yelp Client ID and Yelp API key at https://www.yelp.com/developers/v3/manage_app.
+  Get your Yelp Client ID and API key at https://www.yelp.com/developers/v3/manage_app.
 
-**All services**
-- `make build-all` — build backend and frontend images.
-- `make up-all` — start both stacks.
-- `make down-all` — stop and remove both stacks.
-- `make ps-all` — list all containers.
+## Local Development
+The stack uses Docker Compose with orchestrated targets in the `Makefile` to manage both frontend and backend services together. Use the combined targets below to run the full stack locally.
 
-**Backend health checks**
-- `make check` — Django system checks.
-- `make test` — Django test suite.
-- `make smoke` — imports the project inside the container to verify basics.
+**Running the Full Stack**
+
+Once running, the backend API is available at `http://localhost:8080` and the frontend is served at `http://localhost:3000`.
+
+- `make build-all` — build both backend and frontend images.
+- `make up-all` — start the complete stack.
+- `make down-all` — stop and remove all services and volumes.
+- `make ps-all` — list all running containers.
+
+**Backend Health Checks**
+- `make check` — run Django system checks to validate configuration and detect common issues.
+- `make test` — execute the Django test suite to verify backend functionality.
+- `make smoke` — run a basic smoke test that imports the project inside the container to verify the environment is properly configured.
 
 ## Cloud Deployment
-- Infrastructure and services are defined with AWS CDK (TypeScript) and driven by the same `Makefile`.
-- `make deploy` — synthesize and deploy the CDK stack (no approval prompts) and invoke the test-runner Lambda, writing results to `tests/test-output.json`.
+Infrastructure and services are defined with AWS CDK (TypeScript) and driven by the same `Makefile`.
 - `make bootstrap` — one-time CDK bootstrap for a new AWS account/region.
+- `make deploy` — synthesize and deploy the CDK stack 
 - `make destroy` — remove the deployed stack (irreversible for data).
 - `make clean` — remove local CDK artifacts (`cdk.out`).
-- Before deploying, ensure AWS credentials, the target region, and any required environment variables are set; the Makefile uses the `PROFILE` and `AWS_REGION` variables if you need to override defaults. Use `USE_SUDO=1` if your Docker setup requires sudo (e.g., `make backend-up USE_SUDO=1`).
+- Before deploying, ensure AWS credentials, the target region, and any required environment variables are set via the AWS cli; the Makefile uses the `PROFILE` and `AWS_REGION` variables if you need to override defaults. Use `USE_SUDO=1` if your Docker setup requires sudo (e.g., `make up-all USE_SUDO=1`).
+
+## Documentation
+Comprehensive project documentation is available in `docs/`:
+
+- **[FoodTok-Final-Report.pdf](docs/FoodTok-Final-Report.pdf)** — Complete academic project report covering problem statement, solution architecture, technology stack, deployment strategy, testing approach, technical challenges, and key achievements
+- **[foodtok-general-overview.md](docs/Documentation/foodtok-general-overview.md)** — High-level overview of FoodTok's features, business logic, and technology choices
+- **[foodtok-technical-overview.md](docs/Documentation/foodtok-technical-overview.md)** — Deep dive into technical implementation details including race condition prevention, hold system architecture, and match scoring algorithm
+- **[backend-overview.md](docs/Documentation/backend-overview.md)** — Complete backend API documentation with all 18 endpoints, request/response schemas, and error handling
+- **[backend-endpoint-schemas.md](docs/Documentation/backend-endpoint-schemas.md)** — Detailed API schemas and data models for backend endpoints
+- **[backend-test.md](docs/Documentation/backend-test.md)** — Backend testing strategy, pytest configuration, and coverage requirements
+- **[frontend-test.md](docs/Documentation/frontend-test.md)** — Frontend testing approach with Jest and React Testing Library
+- **[loadtest.md](docs/Documentation/loadtest.md)** — Load testing methodology using Locust, performance benchmarks, and results analysis
