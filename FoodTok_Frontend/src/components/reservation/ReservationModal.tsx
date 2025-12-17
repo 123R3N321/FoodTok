@@ -342,12 +342,8 @@ export default function ReservationModal({
                               ? 'border-orange-500 bg-orange-500 text-white shadow-lg shadow-orange-500/30 scale-105'
                               : 'border-border bg-card hover:border-orange-500 hover:bg-card/80'
                           }`}
-                          title={slot.capacityConstrained ? 'Limited capacity for this party size' : ''}
                         >
                           <div className="text-lg font-bold">{slot.time}</div>
-                          <div className="text-xs opacity-80">
-                            {slot.capacityConstrained ? 'Limited' : `${slot.remainingCapacity || 0} tables`}
-                          </div>
                         </button>
                       ))}
                     </div>
