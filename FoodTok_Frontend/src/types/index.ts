@@ -11,8 +11,8 @@ export interface User {
   lastName: string;
   profileImage?: string;
   preferences: UserPreferences;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface UserPreferences {

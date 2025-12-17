@@ -33,7 +33,9 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     let accountAge = 1;
     try {
       const profile = await apiRequest(`/auth/profile/${userId}`);
-      accountAge = Math.floor((Date.now() - new Date(profile.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24));
+      console.log('Profile:', profile);
+      console.log('createdAt:', profile.createdAt, 'user.createdAt:', profile.user?.createdAt);
+      accountAge = Math.floor((Date.now() - new Date(profile.user.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24));
     } catch {
       accountAge = Math.floor(Math.random() * 30) + 1; // Fallback
     }
