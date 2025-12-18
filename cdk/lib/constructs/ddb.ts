@@ -22,7 +22,7 @@ export class DdbConstruct extends Construct {
       tableName: `${props.projectPrefix}-Users`,
       partitionKey: { name: 'userId', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     // ------------------------------
@@ -33,7 +33,7 @@ export class DdbConstruct extends Construct {
       partitionKey: { name: "userId", type: AttributeType.STRING },
       sortKey: { name: "restaurantId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     // ------------------------------
@@ -43,7 +43,7 @@ export class DdbConstruct extends Construct {
       tableName: `${props.projectPrefix}-Reservations`,
       partitionKey: { name: "reservationId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     this.reservations.addGlobalSecondaryIndex({
@@ -60,7 +60,7 @@ export class DdbConstruct extends Construct {
       tableName: `${props.projectPrefix}-Holds`,
       partitionKey: { name: "holdId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
   }
 }
