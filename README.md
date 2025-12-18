@@ -46,7 +46,7 @@ Infrastructure and services are defined with AWS CDK (TypeScript) and driven by 
 Comprehensive project documentation is available in `docs/`:
 
 - **[FoodTok-Final-Report.pdf](docs/FoodTok-Final-Report.pdf)** — Complete academic project report covering problem statement, solution architecture, technology stack, deployment strategy, testing approach, technical challenges, and key achievements
-- **[FoodTok-Final-Presentation.pdf](docs/FoodTok-Final-Report.pdf)** — Concise final slides used for our demo
+- **[FoodTok-Final-Presentation.pdf](docs/FoodTok-Final-Presentation.pdf)** — Concise final slides used for our demo
 - **[foodtok-general-overview.md](docs/Documentation/foodtok-general-overview.md)** — High-level overview of FoodTok's features, business logic, and technology choices
 - **[foodtok-technical-overview.md](docs/Documentation/foodtok-technical-overview.md)** — Deep dive into technical implementation details including race condition prevention, hold system architecture, and match scoring algorithm
 - **[backend-overview.md](docs/Documentation/backend-overview.md)** — Complete backend API documentation with all 18 endpoints, request/response schemas, and error handling
