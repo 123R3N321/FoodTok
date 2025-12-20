@@ -609,7 +609,7 @@ def get_user_reservations(request, user_id):
             print(f"Found {len(reservations)} reservations for user {user_id}")
             
             # Enrich with restaurant details from Yelp
-            YELP_API_KEY = "jR1H2t_k7N0ccSBaAi5ukGt3LnysoxqvLe6V4zF0zNfXtFFgyNf4o9sIsIakY-zB9gODNFf9TnPpKRSNB-DYU2zGom0F_DNDEZvGTAqIeNDqwc9tB6p4AyyjuaYdaXYx"
+            YELP_API_KEY = "XGjtnGCXkhEW5wggLQvG18IR1bDTz6eP-Wb6cc2W9ACdxEDmNhon2vQm6SEcb1jUJAdD8Mh048Zpfp-G4DjrFBCiX4AJaQZxPqCEJWVwXok4CKwp4d-PO43sH_MkaXYx"
             
             for reservation in reservations:
                 restaurant_id = reservation.get('restaurantId')
